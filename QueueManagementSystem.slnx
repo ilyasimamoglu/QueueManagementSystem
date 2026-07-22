@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="QueueManagementSystem.API/QueueManagementSystem.API.csproj" Id="7b722d2c-5745-40dd-a81e-b3fd8359a262" />
+  <Project Path="QueueManagementSystem.Business/QueueManagementSystem.Business.csproj" Id="d0535685-c79b-4d5b-b659-57adc57a1f79" />
+  <Project Path="QueueManagementSystem.DataAccess/QueueManagementSystem.DataAccess.csproj" Id="10ac6e99-ec10-4886-8fa8-8be054c7e732" />
+  <Project Path="QueueManagementSystem.Entities/QueueManagementSystem.Entities.csproj" Id="18b26922-fe70-4e09-8a19-195997ee9013" />
+</Solution>
