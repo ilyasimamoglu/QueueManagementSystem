@@ -1,0 +1,413 @@
+﻿<Window x:Class="QueueManagementSystem.Counter.AdminWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Yönetim Paneli - Gişe Pro" Height="800" Width="1300" WindowStartupLocation="CenterScreen" 
+        Background="#0F172A" MinWidth="1100" MinHeight="750" FontFamily="Segoe UI">
+
+    <Window.Resources>
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style x:Key="RoundedButton8" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="RoundedButton12" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="12" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="270"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- SOL BÖLÜM: Ana Admin Menüsü -->
+        <Border Grid.Column="0" Background="#1E293B" BorderBrush="#334155" BorderThickness="0,0,1,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Margin="25,30,25,30">
+                    <TextBlock Text="🏢" FontSize="36" Margin="0,0,0,10"/>
+                    <TextBlock Text="KOMUTA MERKEZİ" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
+                    <TextBlock Text="Sistem Yöneticisi" FontSize="12" Foreground="#3B82F6"/>
+                </StackPanel>
+
+                <ListBox x:Name="lstAdminMenu" Grid.Row="1" Background="Transparent" BorderThickness="0" Foreground="#94A3B8" SelectedIndex="0">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Padding" Value="25,15"/>
+                            <Setter Property="FontSize" Value="14"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border x:Name="bd" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="bd" Property="Background" Value="#334155"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="bd" Property="Background" Value="#3B82F6"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBoxItem Content="📊 Genel Özet (Dashboard)"/>
+                    <ListBoxItem Content="👥 Kullanıcı Yönetimi"/>
+                    <ListBoxItem Content="📈 Gelişmiş Raporlar"/>
+                    <ListBoxItem Content="👥 Personel Performansı"/>
+                    <ListBoxItem Content="⚙️ Sistem Ayarları"/>
+                </ListBox>
+
+                <Button Grid.Row="2" Style="{StaticResource RoundedButton8}" Content="🚪 Güvenli Çıkış" Background="#EF4444" Foreground="White" Padding="15" Margin="25,20,25,30" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="BtnLogout_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- SAĞ BÖLÜM: Seçilen Menüye Göre Değişen İçerik -->
+        <Grid Grid.Column="1">
+            <TabControl Background="Transparent" BorderThickness="0" SelectedIndex="{Binding ElementName=lstAdminMenu, Path=SelectedIndex}">
+                <TabControl.ItemContainerStyle>
+                    <Style TargetType="TabItem">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                    </Style>
+                </TabControl.ItemContainerStyle>
+
+                <!-- 0: DASHBOARD (Özet ve Grafikler) -->
+                <TabItem>
+                    <Grid Margin="30">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Üst Bilgi Çubuğu -->
+                        <Grid Grid.Row="0" Margin="0,0,0,25">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Sistem Durumu: " FontSize="14" Foreground="#94A3B8"/>
+                                <TextBlock Text="Tüm Servisler Aktif 🟢" FontSize="14" FontWeight="Bold" Foreground="#10B981"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <TextBlock Text="Hoş Geldiniz, " FontSize="14" Foreground="#94A3B8"/>
+                                <TextBlock Text="Admin" FontSize="14" FontWeight="Bold" Foreground="#F8FAFC"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Özet Kartları -->
+                        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,25">
+                            <Border Background="#1E293B" CornerRadius="12" Padding="20" Margin="0,0,15,0">
+                                <StackPanel>
+                                    <TextBlock Text="BUGÜNKÜ MÜŞTERİ" FontSize="12" FontWeight="Bold" Foreground="#94A3B8"/>
+                                    <TextBlock Text="452" FontSize="32" FontWeight="Bold" Foreground="#3B82F6" Margin="0,5,0,0"/>
+                                    <TextBlock Text="Düne göre +12%" FontSize="11" Foreground="#10B981" Margin="0,5,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#1E293B" CornerRadius="12" Padding="20" Margin="0,0,15,0">
+                                <StackPanel>
+                                    <TextBlock Text="AKTİF GİŞE / TOPLAM" FontSize="12" FontWeight="Bold" Foreground="#94A3B8"/>
+                                    <TextBlock Text="4 / 5" FontSize="32" FontWeight="Bold" Foreground="#10B981" Margin="0,5,0,0"/>
+                                    <TextBlock Text="Personel kapasitesi: %80" FontSize="11" Foreground="#94A3B8" Margin="0,5,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#1E293B" CornerRadius="12" Padding="20" Margin="0,0,15,0">
+                                <StackPanel>
+                                    <TextBlock Text="ŞU AN BEKLEYEN" FontSize="12" FontWeight="Bold" Foreground="#94A3B8"/>
+                                    <TextBlock Text="18" FontSize="32" FontWeight="Bold" Foreground="#F59E0B" Margin="0,5,0,0"/>
+                                    <TextBlock Text="Kuyruk yoğunluğu yüksek" FontSize="11" Foreground="#EF4444" Margin="0,5,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#1E293B" CornerRadius="12" Padding="20">
+                                <StackPanel>
+                                    <TextBlock Text="ORTALAMA BEKLEME" FontSize="12" FontWeight="Bold" Foreground="#94A3B8"/>
+                                    <TextBlock Text="04:15" FontSize="32" FontWeight="Bold" Foreground="#F8FAFC" FontFamily="Consolas" Margin="0,5,0,0"/>
+                                    <TextBlock Text="Dakika : Saniye" FontSize="11" Foreground="#94A3B8" Margin="0,5,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <!-- Grafikler ve Personel Tablosu -->
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="15"/>
+                                <ColumnDefinition Width="1.2*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Background="#1E293B" CornerRadius="12" Padding="25">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Text="Haftalık Yoğunluk Grafiği" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,20"/>
+                                    <Border Grid.Row="1" Background="#0F172A" CornerRadius="8" BorderBrush="#334155" BorderThickness="1">
+                                        <TextBlock Text="[Grafik Modülü Alanı]" Foreground="#334155" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <Border Grid.Column="2" Background="#1E293B" CornerRadius="12" Padding="25">
+                                <StackPanel>
+                                    <TextBlock Text="Personel Performansı (Bugün)" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,20"/>
+                                    <Grid Margin="0,0,0,15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Gişe 1" Foreground="#F8FAFC"/>
+                                        <TextBlock Grid.Column="1" Text="142" Foreground="#3B82F6" FontWeight="Bold" HorizontalAlignment="Right"/>
+                                    </Grid>
+                                    <Grid Margin="0,0,0,15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Gişe 2" Foreground="#F8FAFC"/>
+                                        <TextBlock Grid.Column="1" Text="128" Foreground="#3B82F6" FontWeight="Bold" HorizontalAlignment="Right"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <!-- 1: KULLANICI YÖNETİMİ (YENİ EKLENEN EKRAN) -->
+                <TabItem>
+                    <Grid Margin="30">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock FontSize="24" FontWeight="Bold" Foreground="White" Grid.Row="0" Margin="0,0,0,25" Text="Kullanıcı ve Yetki Yönetimi"/>
+
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="350"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- SOL: Yeni Kullanıcı Ekleme Formu -->
+                            <Border Background="#1E293B" CornerRadius="12" Grid.Column="0" Padding="25">
+                                <StackPanel>
+                                    <TextBlock FontSize="18" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,25" Text="Yeni Kullanıcı Ekle"/>
+
+                                    <TextBlock FontSize="13" Foreground="#94A3B8" Margin="0,0,0,8" Text="Kullanıcı Adı"/>
+                                    <TextBox Background="#0F172A" BorderThickness="0" FontSize="14" Foreground="#F8FAFC" Margin="0,0,0,15" Padding="12" x:Name="txtNewUsername"/>
+
+                                    <TextBlock FontSize="13" Foreground="#94A3B8" Margin="0,0,0,8" Text="Şifre"/>
+                                    <PasswordBox Background="#0F172A" BorderThickness="0" FontSize="14" Foreground="#F8FAFC" Margin="0,0,0,15" Padding="12" x:Name="txtNewPassword"/>
+
+                                    <TextBlock FontSize="13" Foreground="#94A3B8" Margin="0,0,0,8" Text="Rol (Yetki)"/>
+                                    <ComboBox Background="#0F172A" BorderThickness="0" FontSize="14" Foreground="#F8FAFC" Margin="0,0,0,25" Padding="12" SelectedIndex="0" x:Name="cmbNewUserRole">
+                                        <ComboBoxItem Content="Gişe Personeli"/>
+                                        <ComboBoxItem Content="Admin (Yönetici)"/>
+                                    </ComboBox>
+
+                                    <Button Background="#3B82F6" BorderThickness="0" Content="➕ Kullanıcı Ekle" Cursor="Hand" FontWeight="Bold" Foreground="White" Padding="15" Style="{StaticResource RoundedButton8}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- SAĞ: Mevcut Kullanıcılar Listesi -->
+                            <Border Background="#1E293B" CornerRadius="12" Grid.Column="2" Padding="25">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock FontSize="18" FontWeight="Bold" Foreground="#F8FAFC" Grid.Row="0" Margin="0,0,0,20" Text="Sistemdeki Kullanıcılar"/>
+
+                                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="2*"/>
+                                            <ColumnDefinition Width="2*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock FontWeight="Bold" Foreground="#94A3B8" Grid.Column="0" Text="Kullanıcı Adı"/>
+                                        <TextBlock FontWeight="Bold" Foreground="#94A3B8" Grid.Column="1" Text="Rol"/>
+                                        <TextBlock FontWeight="Bold" Foreground="#94A3B8" Grid.Column="2" HorizontalAlignment="Right" Margin="0,0,15,0" Text="İşlem"/>
+                                    </Grid>
+
+                                    <Border Background="#334155" Grid.Row="1" Height="1" Margin="0,0,0,-5" VerticalAlignment="Bottom"/>
+
+                                    <StackPanel Grid.Row="2" Margin="0,15,0,0">
+                                        <Grid Margin="0,0,0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="2*"/>
+                                                <ColumnDefinition Width="2*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                                <TextBlock Margin="0,0,10,0" Text="👑"/>
+                                                <TextBlock FontWeight="Bold" Foreground="White" Text="admin" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <TextBlock Foreground="#10B981" Grid.Column="1" Text="Yönetici" VerticalAlignment="Center"/>
+                                            <Button Background="#EF4444" BorderThickness="0" Content="Sil" Cursor="Hand" Foreground="White" Grid.Column="2" HorizontalAlignment="Right" IsEnabled="False" Padding="15,6" Style="{StaticResource RoundedButton8}" ToolTip="Ana admin silinemez!"/>
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="2*"/>
+                                                <ColumnDefinition Width="2*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                                <TextBlock Margin="0,0,10,0" Text="👤"/>
+                                                <TextBlock FontWeight="Bold" Foreground="White" Text="gise1" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <TextBlock Foreground="#3B82F6" Grid.Column="1" Text="Gişe Personeli" VerticalAlignment="Center"/>
+                                            <Button Background="#EF4444" BorderThickness="0" Content="Sil" Cursor="Hand" Foreground="White" Grid.Column="2" HorizontalAlignment="Right" Padding="15,6" Style="{StaticResource RoundedButton8}"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <!-- 2: GELİŞMİŞ RAPORLAR -->
+                <TabItem>
+                    <Grid Margin="30">
+                        <TextBlock Text="Gelişmiş Raporlar ve Analizler (Çok Yakında)" Foreground="White" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                </TabItem>
+
+                <!-- 3: PERSONEL PERFORMANSI -->
+                <TabItem>
+                    <Grid Margin="30">
+                        <TextBlock Text="Personel Performans Analizi (Çok Yakında)" Foreground="White" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                </TabItem>
+
+                <!-- 4: SİSTEM AYARLARI -->
+                <TabItem>
+                    <Grid Background="#0F172A">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="250"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Background="#1E293B" BorderBrush="#334155" BorderThickness="0,0,1,0">
+                            <ListBox x:Name="lstSettingsMenu" Background="Transparent" BorderThickness="0" Foreground="#94A3B8" Margin="0,20,0,0">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="Padding" Value="25,12"/>
+                                        <Setter Property="FontSize" Value="13"/>
+                                        <Setter Property="Cursor" Value="Hand"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ListBoxItem">
+                                                    <Border x:Name="bd" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                        <ContentPresenter/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="bd" Property="Background" Value="#334155"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsSelected" Value="True">
+                                                            <Setter TargetName="bd" Property="Background" Value="#3B82F6"/>
+                                                            <Setter Property="Foreground" Value="White"/>
+                                                            <Setter Property="FontWeight" Value="Bold"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                                <ListBoxItem Content="🌐 API Ayarları" IsSelected="True"/>
+                                <ListBoxItem Content="🔌 Arduino Donanımı"/>
+                                <ListBoxItem Content="🖨 Yazıcı Ayarları"/>
+                                <ListBoxItem Content="🗄 Veritabanı"/>
+                            </ListBox>
+                        </Border>
+
+                        <TabControl Grid.Column="1" Background="Transparent" BorderThickness="0" SelectedIndex="{Binding ElementName=lstSettingsMenu, Path=SelectedIndex}">
+                            <TabControl.ItemContainerStyle>
+                                <Style TargetType="TabItem">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </Style>
+                            </TabControl.ItemContainerStyle>
+
+                            <TabItem>
+                                <StackPanel Margin="40,30,40,0" HorizontalAlignment="Left" Width="450">
+                                    <TextBlock Text="API Sunucu Bağlantısı" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,25"/>
+                                    <Border Background="#1E293B" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="Sunucu Adresi" FontSize="13" Foreground="#94A3B8" Margin="0,0,0,8"/>
+                                            <TextBox FontSize="14" Padding="12" Background="#0F172A" Foreground="#F8FAFC" BorderThickness="0" Text="https://localhost:7146/api" Margin="0,0,0,15"/>
+                                            <Button Style="{StaticResource RoundedButton8}" Content="Bağlantıyı Test Et" Background="#3B82F6" Foreground="White" Padding="20,10" BorderThickness="0" Cursor="Hand"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </TabItem>
+
+                            <TabItem>
+                                <StackPanel Margin="40,30,40,0" HorizontalAlignment="Left" Width="450">
+                                    <TextBlock Text="Arduino (Seri Port) Donanımı" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,25"/>
+                                    <Border Background="#1E293B" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="COM Port" FontSize="13" Foreground="#94A3B8" Margin="0,0,0,8"/>
+                                            <ComboBox FontSize="14" Padding="12" Background="#0F172A" Foreground="#F8FAFC" BorderThickness="0" Margin="0,0,0,15"/>
+                                            <Button Style="{StaticResource RoundedButton8}" Content="Arduino'ya Bağlan" Background="#10B981" Foreground="White" Padding="20,10" BorderThickness="0" Cursor="Hand"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </TabItem>
+
+                            <TabItem>
+                                <TextBlock Text="Yazıcı Ayarları (Admin tarafından yönetilir)" Foreground="White" Margin="40,30"/>
+                            </TabItem>
+                            <TabItem>
+                                <TextBlock Text="SQL Veritabanı Connection String" Foreground="White" Margin="40,30"/>
+                            </TabItem>
+                        </TabControl>
+
+                        <Button Grid.Column="1" Style="{StaticResource RoundedButton8}" Content="Ayarları Kaydet" Background="#10B981" Foreground="White" Padding="35,12" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,40,30"/>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </Grid>
+</Window>

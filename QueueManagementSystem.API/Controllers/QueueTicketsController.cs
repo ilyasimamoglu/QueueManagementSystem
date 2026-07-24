@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using QueueManagementSystem.Business;
+using Microsoft.AspNetCore.SignalR;
+using QueueManagementSystem.API.Hubs;
+using System.Threading.Tasks;
+using System;
 
 namespace QueueManagementSystem.API.Controllers
 {
@@ -11,10 +15,14 @@ namespace QueueManagementSystem.API.Controllers
         // Controller'ın İş Katmanıyla (Business) iletişim kurması için arayüzü tanımlıyoruz
         private readonly IQueueTicketService _queueTicketService;
 
-        // Dependency Injection ile sistemi bağlıyoruz
-        public QueueTicketsController(IQueueTicketService queueTicketService)
+        // SignalR üzerinden mesaj göndermek için Hub bağlamını ekliyoruz
+        private readonly IHubContext<QueueHub> _hubContext;
+
+        // Dependency Injection ile sistemi bağlıyoruz (HubContext eklendi)
+        public QueueTicketsController(IQueueTicketService queueTicketService, IHubContext<QueueHub> hubContext)
         {
             _queueTicketService = queueTicketService;
+            _hubContext = hubContext;
         }
 
         // Kiosk cihazından yeni bilet almak için tetiklenecek uç nokta (Endpoint)
@@ -29,8 +37,9 @@ namespace QueueManagementSystem.API.Controllers
         }
 
         // Gişe görevlisi butona basıp sıradaki kişiyi çağırdığında tetiklenecek uç nokta
+        // SignalR kullanacağımız için metodu 'async Task' haline getirdik
         [HttpPost("call/{counterId}")]
-        public IActionResult CallNextTicket(int counterId)
+        public async Task<IActionResult> CallNextTicket(int counterId)
         {
             // İş katmanına "Şu ID'ye sahip gişe sıradaki bileti çağırıyor" komutunu gönder
             var ticket = _queueTicketService.CallNextTicket(counterId);
@@ -41,9 +50,13 @@ namespace QueueManagementSystem.API.Controllers
                 return NotFound("Şu anda sırada bekleyen bilet bulunmamaktadır."); // 404 Hatası dön
             }
 
+            // Bilet başarıyla çağrıldıysa, masaüstü uygulamasına (ve oradan Arduino'ya) SignalR ile mesaj fırlatıyoruz!
+            await _hubContext.Clients.All.SendAsync("ReceiveNewCall", ticket.TicketNumber, counterId);
+
             // Eğer bilet başarıyla çağrıldıysa bilgilerini geri dön
             return Ok(ticket);
         }
+
         [HttpPost("complete/{ticketId}")]
         public IActionResult CompleteTicket(int ticketId)
         {
@@ -72,6 +85,5 @@ namespace QueueManagementSystem.API.Controllers
             var tickets = _queueTicketService.GetCalledTickets();
             return Ok(tickets);
         }
-
     }
 }

@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using QueueManagementSystem.API.Hubs;
 using QueueManagementSystem.Business;
 using QueueManagementSystem.DataAccess;
+using QueueManagementSystem.API.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,8 @@ builder.Services.AddDbContext<QueueDbContext>(options =>
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+builder.Services.AddSignalR(); // SignalR ekleniyor, böylece gerçek zamanlı iletişim mümkün olacak
 
 // 2. DÜZELTME: Bilet (QueueTicket) işlemleri için gerekli servis kayıtları eklendi
 builder.Services.AddScoped<ICounterService, CounterManager>();
@@ -36,5 +40,8 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<QueueHub>("/queueHub"); // SignalR Hub'ı "/queueHub" endpoint'ine bağlanacak şekilde ayarlanıyor 
+
 
 app.Run();
