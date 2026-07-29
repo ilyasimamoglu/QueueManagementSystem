@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.SignalR;
 using QueueManagementSystem.API.Hubs;
 using System.Threading.Tasks;
 using System;
+using System.Collections.Generic; // IEnumerable<T> için eklendi
+using System.Linq; // Sayma işlemi (Count) için eklendi
+using QueueManagementSystem.Entities; // QueueTicket sınıfına erişim için eklendi
 
 namespace QueueManagementSystem.API.Controllers
 {
@@ -12,51 +15,55 @@ namespace QueueManagementSystem.API.Controllers
     [ApiController]
     public class QueueTicketsController : ControllerBase
     {
-        // Controller'ın İş Katmanıyla (Business) iletişim kurması için arayüzü tanımlıyoruz
         private readonly IQueueTicketService _queueTicketService;
-
-        // SignalR üzerinden mesaj göndermek için Hub bağlamını ekliyoruz
         private readonly IHubContext<QueueHub> _hubContext;
 
-        // Dependency Injection ile sistemi bağlıyoruz (HubContext eklendi)
         public QueueTicketsController(IQueueTicketService queueTicketService, IHubContext<QueueHub> hubContext)
         {
             _queueTicketService = queueTicketService;
             _hubContext = hubContext;
         }
 
-        // Kiosk cihazından yeni bilet almak için tetiklenecek uç nokta (Endpoint)
+        // --- 1. KIOSK EKRANI İÇİN (Detaylı Bilet Alma ve Bekleyen Sayısı Hesaplama) ---
         [HttpPost("take")]
-        public IActionResult TakeTicket()
+        public IActionResult TakeTicket([FromQuery] string serviceType = "Bireysel", [FromQuery] string priority = "Normal")
         {
-            // İş katmanındaki bilet alma metodunu çalıştır
-            var ticket = _queueTicketService.TakeTicket();
+            var ticket = _queueTicketService.TakeTicket(serviceType, priority);
 
-            // Başarılı (200 OK) koduyla birlikte oluşturulan biletin bilgilerini geri dön
-            return Ok(ticket);
+            // Kuyruktaki mevcut biletleri getir ve QueueTicket listesine çevir
+            var waitingTickets = _queueTicketService.GetWaitingTickets() as IEnumerable<QueueTicket>;
+            int waitingCount = 0;
+
+            if (waitingTickets != null)
+            {
+                // Sınıfta ServiceType olmadığı için, durumu 0 (Bekliyor) olan herkesi sayıyoruz.
+                waitingCount = waitingTickets.Count(t => t.Status == 0);
+            }
+
+            // Hem bilet numarasını hem de hesaplanan bekleyen sayısını JSON olarak dön
+            return Ok(new
+            {
+                TicketNumber = ((QueueTicket)ticket).TicketNumber,
+                WaitingCount = waitingCount
+            });
         }
 
-        // Gişe görevlisi butona basıp sıradaki kişiyi çağırdığında tetiklenecek uç nokta
-        // SignalR kullanacağımız için metodu 'async Task' haline getirdik
+        // --- 2. GİŞE EKRANI İÇİN (Sıradaki Bileti Çağır & SignalR Tetikle) ---
         [HttpPost("call/{counterId}")]
         public async Task<IActionResult> CallNextTicket(int counterId)
         {
-            // İş katmanına "Şu ID'ye sahip gişe sıradaki bileti çağırıyor" komutunu gönder
             var ticket = _queueTicketService.CallNextTicket(counterId);
 
-            // Eğer bekleyen bilet yoksa null dönecektir, bu durumu kontrol edelim
             if (ticket == null)
             {
-                return NotFound("Şu anda sırada bekleyen bilet bulunmamaktadır."); // 404 Hatası dön
+                return NotFound("Şu anda sırada bekleyen bilet bulunmamaktadır.");
             }
 
-            // Bilet başarıyla çağrıldıysa, masaüstü uygulamasına (ve oradan Arduino'ya) SignalR ile mesaj fırlatıyoruz!
             await _hubContext.Clients.All.SendAsync("ReceiveNewCall", ticket.TicketNumber, counterId);
-
-            // Eğer bilet başarıyla çağrıldıysa bilgilerini geri dön
             return Ok(ticket);
         }
 
+        // --- 3. GİŞE EKRANI İÇİN (İşlemi Tamamla) ---
         [HttpPost("complete/{ticketId}")]
         public IActionResult CompleteTicket(int ticketId)
         {
@@ -71,6 +78,52 @@ namespace QueueManagementSystem.API.Controllers
             }
         }
 
+        // --- 4. GİŞE EKRANI İÇİN (Beklemeye Al) ---
+        [HttpPost("hold/{ticketId}")]
+        public IActionResult HoldTicket(int ticketId)
+        {
+            try
+            {
+                _queueTicketService.HoldTicket(ticketId);
+                return Ok(new { Message = $"{ticketId} numaralı bilet beklemeye alındı." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"İşlem beklemeye alınırken bir hata oluştu: {ex.Message}");
+            }
+        }
+
+        // --- 5. GİŞE EKRANI İÇİN (İptal Et) ---
+        [HttpPost("cancel/{ticketId}")]
+        public IActionResult CancelTicket(int ticketId)
+        {
+            try
+            {
+                _queueTicketService.CancelTicket(ticketId);
+                return Ok(new { Message = $"{ticketId} numaralı bilet iptal edildi." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"İşlem iptal edilirken bir hata oluştu: {ex.Message}");
+            }
+        }
+
+        // --- 6. GİŞE EKRANI İÇİN (Transfer Et) ---
+        [HttpPost("transfer/{ticketId}")]
+        public IActionResult TransferTicket(int ticketId)
+        {
+            try
+            {
+                _queueTicketService.TransferTicket(ticketId);
+                return Ok(new { Message = $"{ticketId} numaralı bilet havuza geri gönderildi." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Transfer işlemi sırasında bir hata oluştu: {ex.Message}");
+            }
+        }
+
+        // --- 7. BİLGİ LİSTELEME UÇ NOKTALARI (Admin & TV Ekranı İçin) ---
         [HttpGet("waiting")]
         public IActionResult GetWaitingTickets()
         {
@@ -78,7 +131,6 @@ namespace QueueManagementSystem.API.Controllers
             return Ok(tickets);
         }
 
-        // TV Ekranı: Şu an gişelerde çağrılan/işlem gören biletler listesi
         [HttpGet("called")]
         public IActionResult GetCalledTickets()
         {

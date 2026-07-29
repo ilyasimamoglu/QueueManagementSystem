@@ -9,8 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.105.1" />
+    <PackageReference Include="itext7" Version="9.7.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.29" />
     <PackageReference Include="System.IO.Ports" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\QueueManagementSystem.Entities\QueueManagementSystem.Entities.csproj" />
   </ItemGroup>
 
 </Project>

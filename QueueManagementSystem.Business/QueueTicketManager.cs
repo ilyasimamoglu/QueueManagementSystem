@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 using QueueManagementSystem.DataAccess;
 using QueueManagementSystem.Entities;
 
-
 namespace QueueManagementSystem.Business
 {
     // Aşçımız, hazırladığımız IQueueTicketService menüsündeki sözleşmelere uymak zorunda.
-    public class QueueTicketManager : IQueueTicketService  
+    public class QueueTicketManager : IQueueTicketService
     {
         // Aşçının (Business) malzemeleri alıp koyabilmesi için Kiler Görevlisine (DataAccess) ihtiyacı var.
         private readonly IQueueTicketDal _queueTicketDal;
@@ -21,73 +20,114 @@ namespace QueueManagementSystem.Business
             _queueTicketDal = queueTicketDal;
         }
 
+        // --- 1. MEVCUT BİLET ALMA ---
         public QueueTicket TakeTicket()
         {
-            // 1. Veritabanındaki tüm biletleri getir (Şimdilik basit mantıkla yapıyoruz)
             var allTickets = _queueTicketDal.GetAll();
-
-            // 2. Mevcut en büyük bilet numarasını bul. Eğer hiç bilet yoksa 0 kabul et.
             int lastTicketNumber = allTickets.Any() ? allTickets.Max(t => t.TicketNumber) : 0;
 
-            // 3. Yeni bilet objesini oluştur (Senin Entity'ndeki kurallara göre)
             QueueTicket newTicket = new QueueTicket
             {
-                TicketNumber = lastTicketNumber + 1, // Sıradaki numara
+                TicketNumber = lastTicketNumber + 1,
                 Status = 0,                          // 0 = Bekliyor
-                CreatedAt = DateTime.Now             // Alındığı anın saati
-                // CounterId ve CompletedAt boş (null) bırakılıyor çünkü henüz işlem görmedi.
+                CreatedAt = DateTime.Now
             };
 
-            // 4. Kiler görevlisine (DataAccess) "Bunu veritabanına kaydet" komutunu ver
             _queueTicketDal.Add(newTicket);
-
-            // 5. Oluşturulan bileti garsona (Controller/API) geri gönder
             return newTicket;
         }
 
+        // --- 2. KIOSK İÇİN DETAYLI BİLET ALMA (YENİ) ---
+        public QueueTicket TakeTicket(string serviceType, string priority)
+        {
+            var allTickets = _queueTicketDal.GetAll();
+            int lastTicketNumber = allTickets.Any() ? allTickets.Max(t => t.TicketNumber) : 0;
+
+            QueueTicket newTicket = new QueueTicket
+            {
+                TicketNumber = lastTicketNumber + 1,
+                Status = 0,                          // 0 = Bekliyor
+                CreatedAt = DateTime.Now
+                // Not: Eğer QueueTicket Entity sınıfına bu özellikleri eklersen yorum satırlarını kaldırabilirsin:
+                // ServiceType = serviceType, 
+                // Priority = priority
+            };
+
+            _queueTicketDal.Add(newTicket);
+            return newTicket;
+        }
+
+        // --- 3. SIRADAKİ BİLETİ ÇAĞIR ---
         public QueueTicket CallNextTicket(int counterId)
         {
-            // 1. Durumu 0 (Bekliyor) olan tüm biletleri bul ve tarihe göre en eskisini (ilk geleni) seç.
             var nextTicket = _queueTicketDal.GetAll()
-                                            .Where(t => t.Status == 0)
+                                            .Where(t => t.Status == 0) // 0 = Bekliyor
                                             .OrderBy(t => t.CreatedAt)
                                             .FirstOrDefault();
 
-            // 2. Eğer bekleyen bilet varsa güncellemeleri yap
             if (nextTicket != null)
             {
                 nextTicket.Status = 1;               // 1 = Çağrıldı
-                nextTicket.CounterId = counterId;    // Hangi gişe çağırdıysa onu kaydet
-
-                // Kiler görevlisine "Bu biletin bilgilerini güncelle" de
+                nextTicket.CounterId = counterId;
                 _queueTicketDal.Update(nextTicket);
             }
 
-            // 3. Bileti geri gönder (Eğer bilet yoksa null dönecektir, API tarafında "Bekleyen bilet yok" uyarısı veririz)
             return nextTicket;
         }
+
+        // --- 4. BİLETİ TAMAMLA ---
         public void CompleteTicket(int ticketId)
         {
-            // GetAll() ile biletleri getirip LINQ (FirstOrDefault) yardımıyla istediğimiz ID'yi buluyoruz
             var ticket = _queueTicketDal.GetAll().FirstOrDefault(t => t.Id == ticketId);
-
             if (ticket != null)
             {
-                // 2 = Tamamlandı olarak kabul ediliyor
-                ticket.Status = 2;
-
+                ticket.Status = 2; // 2 = Tamamlandı
                 _queueTicketDal.Update(ticket);
             }
         }
+
+        // --- 5. BİLETİ BEKLEMEYE AL (YENİ) ---
+        public void HoldTicket(int ticketId)
+        {
+            var ticket = _queueTicketDal.GetAll().FirstOrDefault(t => t.Id == ticketId);
+            if (ticket != null)
+            {
+                ticket.Status = 3; // 3 = Beklemeye Alındı
+                _queueTicketDal.Update(ticket);
+            }
+        }
+
+        // --- 6. BİLETİ İPTAL ET (YENİ) ---
+        public void CancelTicket(int ticketId)
+        {
+            var ticket = _queueTicketDal.GetAll().FirstOrDefault(t => t.Id == ticketId);
+            if (ticket != null)
+            {
+                ticket.Status = 4; // 4 = İptal Edildi
+                _queueTicketDal.Update(ticket);
+            }
+        }
+
+        // --- 7. BİLETİ TRANSFER ET (YENİ) ---
+        public void TransferTicket(int ticketId)
+        {
+            var ticket = _queueTicketDal.GetAll().FirstOrDefault(t => t.Id == ticketId);
+            if (ticket != null)
+            {
+                ticket.Status = 0; // Tekrar 0 (Bekliyor) durumuna çekilip havuza atılır
+                ticket.CounterId = null; // Bağlı olduğu gişeden koparılır
+                _queueTicketDal.Update(ticket);
+            }
+        }
+
+        // --- 8. LİSTELEME METOTLARI ---
         public List<QueueTicket> GetWaitingTickets()
         {
-            // Status değeri 0 (Bekleyen) olanları filtreleyip liste olarak döndürüyoruz
             return _queueTicketDal.GetAll().Where(t => t.Status == 0).ToList();
         }
 
         public List<QueueTicket> GetCalledTickets()
         {
-            // Status değeri 1 (Gişeye Çağrılmış / İşlemde) olanları filtreleyip liste olarak döndürüyoruz
             return _queueTicketDal.GetAll().Where(t => t.Status == 1).ToList();
         }
     }

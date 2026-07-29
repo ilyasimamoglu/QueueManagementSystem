@@ -12,5 +12,6 @@ namespace QueueManagementSystem.DataAccess
 
         public DbSet<QueueTicket> QueueTickets { get; set; }
         public DbSet<Counter> Counters { get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }

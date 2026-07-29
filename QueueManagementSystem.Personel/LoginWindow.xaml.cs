@@ -1,57 +1,93 @@
-﻿using System.Windows;
+﻿using System;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Windows;
 using System.Windows.Input;
+using QueueManagementSystem.Counter.Models;
 
 namespace QueueManagementSystem.Counter
 {
     public partial class LoginWindow : Window
     {
+        private readonly HttpClient _httpClient;
+
         public LoginWindow()
         {
             InitializeComponent();
+
+            // API bağlantısı için ayarlar (Portunu kontrol etmeyi unutma)
+            _httpClient = new HttpClient();
+            _httpClient.BaseAddress = new Uri("https://localhost:7146/");
         }
 
-        private void BtnLogin_Click(object sender, RoutedEventArgs e)
+        private async void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
-            string username = txtUsername.Text.Trim().ToLower();
+            string username = txtUsername.Text.Trim();
             string password = txtPassword.Password;
 
-            // 1. Admin Yetkisi Kontrolü
-            if (username == "admin" && password == "1234")
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
-                // Admin ekranını (AdminWindow) aç
-                AdminWindow adminScreen = new AdminWindow();
-                adminScreen.Show();
-
-                // Login ekranını kapat
-                this.Close();
+                MessageBox.Show("Lütfen kullanıcı adı ve şifre giriniz.", "Eksik Bilgi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
-            // 2. Gişe Personeli Kontrolü (Örn: gise1, gise2 ve şifre 0000)
-            else if (username.StartsWith("gise") && password == "0000")
-            {
-                // Ana Gişe ekranını (MainWindow) aç
-                MainWindow counterScreen = new MainWindow();
-                counterScreen.Show();
 
-                // Login ekranını kapat
-                this.Close();
-            }
-            // Hatalı Giriş
-            else
+            var loginData = new
             {
-                MessageBox.Show("Hatalı kullanıcı adı veya şifre girdiniz.", "Giriş Başarısız", MessageBoxButton.OK, MessageBoxImage.Error);
-                txtPassword.Clear();
-                txtPassword.Focus();
+                Username = username,
+                Password = password
+            };
+
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("api/Users/login", loginData);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var userJson = await response.Content.ReadAsStringAsync();
+                    var loggedInUser = JsonSerializer.Deserialize<UserDto>(userJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    // GİRİŞ YAPAN KULLANICIYI HAFIZAYA ALIYORUZ
+                    // Bu sayede CounterWindow açıldığında hangi gişe personelinin işlem yaptığını bileceğiz
+                    Application.Current.Properties["LoggedInUserId"] = loggedInUser.Id;
+                    Application.Current.Properties["LoggedInUserName"] = loggedInUser.FullName ?? loggedInUser.Username;
+
+                    if (loggedInUser.Role != null && loggedInUser.Role.Contains("Admin", StringComparison.OrdinalIgnoreCase))
+                    {
+                        AdminWindow adminScreen = new AdminWindow();
+                        adminScreen.Show();
+                    }
+                    else
+                    {
+                        CounterWindow counterScreen = new CounterWindow();
+                        counterScreen.Show();
+                    }
+
+                    this.Close();
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    MessageBox.Show("Hatalı kullanıcı adı veya şifre girdiniz.", "Giriş Başarısız", MessageBoxButton.OK, MessageBoxImage.Error);
+                    txtPassword.Clear();
+                    txtPassword.Focus();
+                }
+                else
+                {
+                    MessageBox.Show($"Sunucudan beklenmeyen bir yanıt geldi: {response.StatusCode}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("API sunucusuna ulaşılamadı. Arka planda API projesinin çalıştığından emin olun.\nDetay: " + ex.Message, "Bağlantı Hatası", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        // Pencere standart Windows çubuğu kullanmadığı için sürükleme özelliği
         private void Border_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
                 this.DragMove();
         }
 
-        // X butonuna basıldığında uygulamayı tamamen kapatır
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();

@@ -13,7 +13,7 @@
             <TextBlock Text="Lütfen yapmak istediğiniz işlemi seçin" FontSize="24" Foreground="#BDC3C7" HorizontalAlignment="Center" Margin="0,0,0,50"/>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Bireysel İşlem" Width="300" Height="150" FontSize="32" FontWeight="Bold" 
+                <Button Content="Öğrenci İşleri" Width="300" Height="150" FontSize="32" FontWeight="Bold" 
                         Background="#3498DB" Foreground="White" Margin="0,0,30,0" BorderThickness="0"
                         Click="BtnBireysel_Click" Cursor="Hand">
                     <Button.Resources>
@@ -23,7 +23,7 @@
                     </Button.Resources>
                 </Button>
 
-                <Button Content="Kurumsal İşlem" Width="300" Height="150" FontSize="32" FontWeight="Bold" 
+                <Button Content="E-Kampüs İşleri" Width="300" Height="150" FontSize="32" FontWeight="Bold" 
                         Background="#E67E22" Foreground="White" BorderThickness="0"
                         Click="BtnKurumsal_Click" Cursor="Hand">
                     <Button.Resources>
