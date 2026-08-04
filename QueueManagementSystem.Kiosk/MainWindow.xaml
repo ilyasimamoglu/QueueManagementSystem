@@ -9,6 +9,11 @@
     <Grid>
         <!-- Ana Ekran (İşlem Seçimi) -->
         <StackPanel x:Name="pnlSelection" VerticalAlignment="Center" HorizontalAlignment="Center">
+
+            <!-- KİOSK EKRANI BAŞLIK YAZILARI (Logo Yok) -->
+            <TextBlock Text="ERCİYES ÜNİVERSİTESİ" FontSize="64" FontWeight="Black" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+            <TextBlock Text="BİLGİ İŞLEM DAİRE BAŞKANLIĞI" FontSize="36" FontWeight="Bold" Foreground="#ECF0F1" HorizontalAlignment="Center" Margin="0,0,0,60"/>
+
             <TextBlock Text="Hoş Geldiniz" FontSize="48" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,10"/>
             <TextBlock Text="Lütfen yapmak istediğiniz işlemi seçin" FontSize="24" Foreground="#BDC3C7" HorizontalAlignment="Center" Margin="0,0,0,50"/>
 

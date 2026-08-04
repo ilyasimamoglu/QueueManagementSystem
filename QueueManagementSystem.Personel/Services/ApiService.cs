@@ -40,6 +40,12 @@ namespace QueueManagementSystem.Counter.Services
             return list?.Count ?? 0;
         }
 
+        // YENİ EKLENEN: Gerçek Dashboard Verilerini Çeken Metot
+        public async Task<RealDashboardDto> GetRealDashboardDataAsync()
+        {
+            return await _httpClient.GetFromJsonAsync<RealDashboardDto>("api/Reports/dashboard-real");
+        }
+
         // --- KULLANICI İSTEKLERİ ---
         public async Task<List<UserDto>> GetUsersAsync()
         {
@@ -70,9 +76,10 @@ namespace QueueManagementSystem.Counter.Services
             return await _httpClient.GetFromJsonAsync<ReportSummaryDto>($"api/Reports/summary?period={period}");
         }
 
-        public async Task<List<StaffPerformanceDto>> GetPerformanceDataAsync()
+        // --- DEĞİŞTİRİLEN KISIM: PERİYOD PARAMETRESİ EKLENDİ ---
+        public async Task<List<StaffPerformanceDto>> GetPerformanceDataAsync(string period = "Günlük")
         {
-            return await _httpClient.GetFromJsonAsync<List<StaffPerformanceDto>>("api/Reports/performance");
+            return await _httpClient.GetFromJsonAsync<List<StaffPerformanceDto>>($"api/Reports/performance?period={period}");
         }
     }
 }

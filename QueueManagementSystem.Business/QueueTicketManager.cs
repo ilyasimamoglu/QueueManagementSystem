@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using QueueManagementSystem.DataAccess;
 using QueueManagementSystem.Entities;
 
@@ -48,9 +46,6 @@ namespace QueueManagementSystem.Business
                 TicketNumber = lastTicketNumber + 1,
                 Status = 0,                          // 0 = Bekliyor
                 CreatedAt = DateTime.Now
-                // Not: Eğer QueueTicket Entity sınıfına bu özellikleri eklersen yorum satırlarını kaldırabilirsin:
-                // ServiceType = serviceType, 
-                // Priority = priority
             };
 
             _queueTicketDal.Add(newTicket);
@@ -69,6 +64,10 @@ namespace QueueManagementSystem.Business
             {
                 nextTicket.Status = 1;               // 1 = Çağrıldı
                 nextTicket.CounterId = counterId;
+
+                // BURASI EKSİKTİ EKLENDİ: Çağrılma saatini veritabanına yazıyoruz!
+                nextTicket.CalledAt = DateTime.Now;
+
                 _queueTicketDal.Update(nextTicket);
             }
 
@@ -82,6 +81,10 @@ namespace QueueManagementSystem.Business
             if (ticket != null)
             {
                 ticket.Status = 2; // 2 = Tamamlandı
+
+                // KÖK ÇÖZÜM BURASI: İşlem bittiği an saati veritabanına işliyoruz
+                ticket.CompletedAt = DateTime.Now;
+
                 _queueTicketDal.Update(ticket);
             }
         }
@@ -104,6 +107,10 @@ namespace QueueManagementSystem.Business
             if (ticket != null)
             {
                 ticket.Status = 4; // 4 = İptal Edildi
+
+                // İptal edilen işlemlerin de süresini kapatıyoruz ki raporlarda açık kalmasın
+                ticket.CompletedAt = DateTime.Now;
+
                 _queueTicketDal.Update(ticket);
             }
         }
@@ -116,6 +123,14 @@ namespace QueueManagementSystem.Business
             {
                 ticket.Status = 0; // Tekrar 0 (Bekliyor) durumuna çekilip havuza atılır
                 ticket.CounterId = null; // Bağlı olduğu gişeden koparılır
+
+                // Transfer olduğunda süreyi sıfırlıyoruz ki diğer gişe baştan alsın
+                ticket.CreatedAt = DateTime.Now;
+
+                // BURASI EKLENDİ: Transferde çağrılma süresini de sıfırlıyoruz.
+                ticket.CalledAt = null;
+                ticket.CompletedAt = null;
+
                 _queueTicketDal.Update(ticket);
             }
         }

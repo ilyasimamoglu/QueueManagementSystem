@@ -63,7 +63,7 @@ namespace QueueManagementSystem.Desktop
             try
             {
                 _hubConnection = new HubConnectionBuilder()
-                    .WithUrl("https://localhost:7146/queueHub")
+                  .WithUrl("http://10.40.80.167:5000/queueHub")
                     .Build();
 
                 // DÜZELTME BURADA YAPILDI: <string, int> yerine <int, int> olarak değiştirildi.

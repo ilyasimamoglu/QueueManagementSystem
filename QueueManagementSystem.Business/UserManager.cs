@@ -76,6 +76,9 @@ namespace QueueManagementSystem.Business
             existingUser.Role = user.Role;
             existingUser.IsActive = user.IsActive;
 
+            // ÇÖZÜM BURADA: Gişe atamasını API'den gelen yeni değere eşitliyoruz
+            existingUser.AssignedCounter = user.AssignedCounter;
+
             // Eğer şifre alanı boş gönderilmemişse, şifreyi de güncelle
             if (!string.IsNullOrWhiteSpace(user.Password))
             {

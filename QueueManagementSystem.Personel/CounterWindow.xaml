@@ -29,70 +29,6 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
-        <Style TargetType="ComboBox">
-            <Setter Property="Background" Value="#0F172A"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#334155"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="FontWeight" Value="Normal"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ComboBox">
-                        <Grid>
-                            <ToggleButton x:Name="ToggleButton" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Focusable="false" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press">
-                                <ToggleButton.Template>
-                                    <ControlTemplate TargetType="ToggleButton">
-                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="30"/>
-                                                </Grid.ColumnDefinitions>
-                                                <Path Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M 0 0 L 4 4 L 8 0 Z" Fill="#94A3B8" />
-                                            </Grid>
-                                        </Border>
-                                    </ControlTemplate>
-                                </ToggleButton.Template>
-                            </ToggleButton>
-                            <ContentPresenter x:Name="ContentSite" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="12,0,30,0" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                            <Popup x:Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
-                                <Grid x:Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                                    <Border x:Name="DropDownBorder" Background="#0F172A" BorderThickness="1" BorderBrush="#334155" CornerRadius="0,0,5,5"/>
-                                    <ScrollViewer Margin="1" SnapsToDevicePixels="True">
-                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
-                                    </ScrollViewer>
-                                </Grid>
-                            </Popup>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style TargetType="ComboBoxItem">
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontWeight" Value="Normal"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ComboBoxItem">
-                        <Border x:Name="Bd" Background="#0F172A" Padding="12,10" BorderThickness="0">
-                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#3B82F6"/>
-                            </Trigger>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#1E293B"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </Window.Resources>
 
     <Grid Margin="20">
@@ -110,13 +46,10 @@
             </StackPanel>
 
             <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal">
-                <TextBlock Text="👤 Ahmet Kaya" FontSize="15" FontWeight="SemiBold" Foreground="#94A3B8" Margin="0,0,15,0" VerticalAlignment="Center"/>
-                <ComboBox x:Name="cmbCounterId" SelectionChanged="cmbCounterId_SelectionChanged" FontSize="14" Margin="0,0,15,0" VerticalAlignment="Center" Width="90">
-                    <ComboBoxItem Content="Gişe 1"/>
-                    <ComboBoxItem Content="Gişe 2"/>
-                    <ComboBoxItem Content="Gişe 3" IsSelected="True"/>
-                    <ComboBoxItem Content="Gişe 4"/>
-                </ComboBox>
+                <!-- Personel ve Gişe Bilgisi -->
+                <TextBlock x:Name="txtStaffInfo" Text="👤 Yükleniyor..." FontSize="15" FontWeight="SemiBold" Foreground="#94A3B8" Margin="0,0,30,0" VerticalAlignment="Center"/>
+
+                <!-- Online Rozeti ve Saat Geri Eklendi -->
                 <TextBlock Text="🟢 Online" FontSize="15" FontWeight="Bold" Foreground="#10B981" Margin="0,0,30,0" VerticalAlignment="Center"/>
                 <Border Width="1" Background="#334155" Margin="0,0,30,0" Height="25"/>
                 <StackPanel VerticalAlignment="Center">
@@ -139,11 +72,15 @@
             <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
+                    <!-- 1. Birleştirilmiş Kart (İstatistik + Son İşlem + Mola) -->
                     <RowDefinition Height="Auto"/>
+                    <!-- 2. Çıkış Yap (En Altta) -->
                 </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" Background="#1E293B" CornerRadius="12" Padding="20">
+                <!-- 1. BİRLEŞTİRİLMİŞ KART (İstatistikler, Son İşlem ve Mola Al) -->
+                <Border Grid.Row="0" Background="#1E293B" CornerRadius="12" Padding="20" Margin="0,0,0,15">
                     <StackPanel>
+                        <!-- A) GÜNLÜK İSTATİSTİKLER -->
                         <TextBlock Text="GÜNLÜK İSTATİSTİKLER" FontSize="14" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,20"/>
 
                         <Grid Margin="0,0,0,15">
@@ -174,14 +111,12 @@
                             <TextBlock Text="Ortalama Süre" Foreground="#94A3B8" FontSize="15"/>
                             <TextBlock x:Name="txtAvgProcessTime" Text="00:00" Foreground="#10B981" FontSize="20" FontWeight="Bold" HorizontalAlignment="Right" FontFamily="Consolas"/>
                         </Grid>
-                    </StackPanel>
-                </Border>
 
-                <!-- Sol Alt: Son İşlem -->
-                <Border Grid.Row="1" Background="#1E293B" CornerRadius="12" Padding="20" Margin="0,15,0,0">
-                    <StackPanel>
+                        <Border BorderBrush="#334155" BorderThickness="0,0,0,1" Margin="0,20,0,20"/>
+
+                        <!-- B) SON İŞLEM -->
                         <TextBlock Text="SON İŞLEM" FontSize="12" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,10"/>
-                        <Grid>
+                        <Grid Margin="0,0,0,20">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
@@ -192,8 +127,24 @@
                                 <TextBlock x:Name="txtLastTicketEndTime" Text="Bitiş: --:--" Foreground="#94A3B8" FontSize="12" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Grid>
+
+                        <!-- C) MOLA AL BUTONU -->
+                        <Button x:Name="BtnBreak" Click="BtnBreak_Click" Style="{StaticResource RoundedButton8}" Background="#F59E0B" Foreground="White" BorderThickness="0" Padding="0,12" Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="☕ " FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="Mola Al" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </Border>
+
+                <!-- 2. ÇIKIŞ YAP BUTONU (En Altta Bağımsız) -->
+                <Button x:Name="BtnLogout" Click="BtnLogout_Click" Grid.Row="1" Style="{StaticResource RoundedButton8}" Background="#EF4444" Foreground="White" BorderThickness="0" Padding="0,12" Cursor="Hand" VerticalAlignment="Bottom">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="🚪 " FontSize="14" VerticalAlignment="Center"/>
+                        <TextBlock Text="Çıkış Yap" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
             </Grid>
 
             <!-- ================= ORTA SÜTUN ================= -->
@@ -259,7 +210,7 @@
                     </Grid>
                 </Border>
 
-                <!-- BUTONLAR -->
+                <!-- AKSİYON BUTONLARI -->
                 <Grid Grid.Row="1" Margin="0,15,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -316,12 +267,16 @@
 
             <!-- ================= SAĞ SÜTUN ================= -->
             <Grid Grid.Column="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="43*"/>
+                    <ColumnDefinition Width="305*"/>
+                </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" Background="#1E293B" CornerRadius="12" Padding="20">
+                <Border Grid.Row="0" Background="#1E293B" CornerRadius="12" Padding="20" Grid.ColumnSpan="2" Margin="0,0,0,140" Grid.RowSpan="2">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -350,7 +305,7 @@
                 </Border>
 
                 <!-- Sistem Durumu -->
-                <Border Grid.Row="1" Background="#1E293B" CornerRadius="12" Padding="20" Margin="0,15,0,0">
+                <Border Grid.Row="1" Background="#1E293B" CornerRadius="12" Padding="20" Margin="0,15,0,0" Grid.ColumnSpan="2">
                     <StackPanel>
                         <TextBlock Text="SİSTEM DURUMU" FontSize="12" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,15"/>
                         <UniformGrid Columns="2" Rows="2">

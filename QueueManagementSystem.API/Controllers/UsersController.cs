@@ -65,6 +65,30 @@ namespace QueueManagementSystem.API.Controllers
             }
         }
 
+        // --- DEĞİŞTİRİLEN KISIM: DOUBLE (ONDALIKLI) DAKİKA ALIYOR ---
+        [HttpPut("{id}/update-break")]
+        public IActionResult UpdateBreakTime(int id, [FromBody] double additionalBreakMinutes)
+        {
+            try
+            {
+                var user = _userService.GetUserById(id);
+                if (user == null)
+                    return NotFound(new { message = "Kullanıcı bulunamadı." });
+
+                // Veritabanındaki mevcut mola süresinin üzerine yeni dakikayı ekliyoruz
+                user.TotalBreakTimeInMinutes += additionalBreakMinutes;
+
+                // Nesneyi iş katmanına geri yollayıp güncelliyoruz
+                _userService.UpdateUser(user);
+
+                return Ok(new { message = "Mola süresi başarıyla güncellendi." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {

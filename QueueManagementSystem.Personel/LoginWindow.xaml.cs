@@ -18,7 +18,7 @@ namespace QueueManagementSystem.Counter
 
             // API bağlantısı için ayarlar (Portunu kontrol etmeyi unutma)
             _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new Uri("https://localhost:7146/");
+            _httpClient.BaseAddress = new Uri("http://10.40.80.167:5000/");
         }
 
         private async void BtnLogin_Click(object sender, RoutedEventArgs e)
@@ -54,12 +54,15 @@ namespace QueueManagementSystem.Counter
 
                     if (loggedInUser.Role != null && loggedInUser.Role.Contains("Admin", StringComparison.OrdinalIgnoreCase))
                     {
-                        AdminWindow adminScreen = new AdminWindow();
+                        // DEĞİŞEN KISIM: Adminin adını da parametre olarak yolluyoruz
+                        string adminName = loggedInUser.FullName ?? loggedInUser.Username;
+                        AdminWindow adminScreen = new AdminWindow(adminName);
                         adminScreen.Show();
                     }
                     else
                     {
-                        CounterWindow counterScreen = new CounterWindow();
+                        // ÇÖZÜM BURADA: Artık CounterWindow'a giriş yapan kullanıcıyı (loggedInUser) gönderiyoruz.
+                        CounterWindow counterScreen = new CounterWindow(loggedInUser);
                         counterScreen.Show();
                     }
 

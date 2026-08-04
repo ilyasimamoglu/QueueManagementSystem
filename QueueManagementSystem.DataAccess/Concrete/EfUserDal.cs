@@ -35,9 +35,30 @@ namespace QueueManagementSystem.DataAccess.Concrete
 
         public void Update(User user)
         {
-            // Kullanıcı bilgilerini güncelle ve kaydet
-            _context.Users.Update(user);
-            _context.SaveChanges();
+            // ÇÖZÜM: Önce silinecek/güncellenecek mevcut kullanıcıyı veritabanından buluyoruz.
+            // Bu sayede dışarıdan gönderilmeyen (Mola Süresi, Kayıt Tarihi vb.) verilerin ezilmesini önlüyoruz.
+            var existingUser = _context.Users.FirstOrDefault(u => u.Id == user.Id);
+
+            if (existingUser != null)
+            {
+                // Sadece güncellenmesine izin verdiğimiz alanları değiştiriyoruz
+                existingUser.FullName = user.FullName;
+                existingUser.Username = user.Username;
+                existingUser.Role = user.Role;
+                existingUser.IsActive = user.IsActive;
+
+                // Yeni eklediğimiz Gişe Ataması alanı
+                existingUser.AssignedCounter = user.AssignedCounter;
+
+                // Şifre boş gönderilmemişse güncelle (WPF tarafında şifre değiştirmek istemiyorsa boş geliyordu)
+                if (!string.IsNullOrEmpty(user.Password))
+                {
+                    existingUser.Password = user.Password;
+                }
+
+                _context.Users.Update(existingUser);
+                _context.SaveChanges();
+            }
         }
 
         public void Delete(int id)

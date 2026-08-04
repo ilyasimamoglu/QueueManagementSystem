@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 namespace QueueManagementSystem.Counter.Models
 {
     public class UserDto
@@ -11,6 +12,10 @@ namespace QueueManagementSystem.Counter.Models
         public string FullName { get; set; }
         public string Username { get; set; }
         public string Role { get; set; }
+
+        // YENİ EKLENEN ÖZELLİKLER
+        public string AssignedCounter { get; set; }
+        public double TotalBreakTimeInMinutes { get; set; }
 
         public string Icon => !string.IsNullOrEmpty(Role) && Role.Contains("Admin") ? "👑" : "👤";
         public string RoleColor => !string.IsNullOrEmpty(Role) && Role.Contains("Admin") ? "#F59E0B" : "#10B981";

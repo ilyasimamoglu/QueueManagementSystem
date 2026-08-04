@@ -4,9 +4,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using System.Printing;
-using System.IO.Ports;
 using QueueManagementSystem.Counter.Models;
 using QueueManagementSystem.Counter.Services;
+using System.Threading.Tasks;
+using System.IO.Ports;
 
 namespace QueueManagementSystem.Counter
 {
@@ -15,18 +16,18 @@ namespace QueueManagementSystem.Counter
         private DispatcherTimer _dashboardTimer;
         private DispatcherTimer _clockTimer;
 
-        // Servislerimiz
         private readonly ConfigService _configService;
         private readonly PrintAndExportService _printExportService;
         private ApiService _apiService;
 
         private int? _editingUserId = null;
+        private string _loggedInAdminName;
 
-        public AdminWindow()
+        public AdminWindow(string adminName = "Sistem Yöneticisi")
         {
             InitializeComponent();
+            _loggedInAdminName = adminName;
 
-            // Servisleri Başlatıyoruz
             _configService = new ConfigService();
             _printExportService = new PrintAndExportService();
 
@@ -35,17 +36,16 @@ namespace QueueManagementSystem.Counter
 
         private async void AdminWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // Önce Ayarları Oku ve API Servisini Başlat
+            txtAdminName.Text = _loggedInAdminName;
+
             LoadSystemSettings();
 
-            // Verileri Yükle
             await LoadDashboardDataAsync();
             await LoadUsersAsync();
             await LoadReportDataAsync("Günlük");
-            await LoadPerformanceDataAsync();
+            await LoadPerformanceDataAsync("Günlük");
 
-            // Zamanlayıcıları Başlat
-            _dashboardTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+            _dashboardTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
             _dashboardTimer.Tick += async (s, args) => await LoadDashboardDataAsync();
             _dashboardTimer.Start();
 
@@ -56,12 +56,9 @@ namespace QueueManagementSystem.Counter
                 txtCurrentDate.Text = DateTime.Now.ToString("dd.MM.yyyy");
             };
             _clockTimer.Start();
-
-            txtCurrentTime.Text = DateTime.Now.ToString("HH:mm:ss");
-            txtCurrentDate.Text = DateTime.Now.ToString("dd.MM.yyyy");
         }
 
-        // --- DASHBOARD METOTLARI ---
+        // --- DASHBOARD GÜNCELLEMESİ (GERÇEK VERİLER) ---
         private async Task LoadDashboardDataAsync()
         {
             if (_apiService == null) return;
@@ -71,8 +68,25 @@ namespace QueueManagementSystem.Counter
                 int calledCount = await _apiService.GetCalledTicketCountAsync();
                 txtTotalCustomers.Text = (int.Parse(txtWaitingCustomers.Text) + calledCount).ToString();
 
-                int activeCounters = await _apiService.GetActiveCounterCountAsync();
-                txtActiveCounters.Text = $"{activeCounters} / 5";
+                var summary = await _apiService.GetReportSummaryAsync("Günlük");
+                if (summary != null) txtDashboardAvgWait.Text = summary.AverageWaitTime;
+
+                var dashboardData = await _apiService.GetRealDashboardDataAsync();
+                if (dashboardData != null)
+                {
+                    icWeeklyChart.ItemsSource = dashboardData.WeeklyChart;
+                    icWeeklyLabels.ItemsSource = dashboardData.WeeklyChart;
+                    icHourlyChart.ItemsSource = dashboardData.HourlyChart;
+                    icCountersStatus.ItemsSource = dashboardData.CounterStatuses;
+
+                    int activeCount = 0;
+                    foreach (var counter in dashboardData.CounterStatuses)
+                    {
+                        if (counter.IsActive) activeCount++;
+                    }
+                    int totalCounters = dashboardData.CounterStatuses.Count;
+                    txtActiveCounters.Text = $"{activeCount} / {totalCounters}";
+                }
 
                 txtApiStatus.Text = "🟢 Bağlı";
                 txtApiStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#10B981"));
@@ -84,7 +98,7 @@ namespace QueueManagementSystem.Counter
             }
         }
 
-        // --- KULLANICI YÖNETİMİ METOTLARI ---
+        // --- KULLANICI YÖNETİMİ ---
         private async Task LoadUsersAsync()
         {
             if (_apiService == null) return;
@@ -94,9 +108,9 @@ namespace QueueManagementSystem.Counter
             }
             catch (Exception)
             {
-                icUsers.ItemsSource = new List<UserDto>
+                icUsers.ItemsSource = new List<dynamic>
                 {
-                    new UserDto { Id = 1, FullName = "API Bağlantı Hatası", Username = "-", Role = "Hata" }
+                    new { Id = 1, FullName = "API Bağlantı Hatası", Username = "-", Role = "Hata", AssignedCounter = "-", RoleColor="#EF4444", Icon="❌" }
                 };
             }
         }
@@ -107,6 +121,9 @@ namespace QueueManagementSystem.Counter
             string username = txtNewUsername.Text.Trim();
             string password = txtNewPassword.Password;
             string role = ((ComboBoxItem)cmbNewUserRole.SelectedItem).Content.ToString();
+            string assignedCounter = ((ComboBoxItem)cmbAssignedCounter.SelectedItem).Content.ToString();
+
+            if (assignedCounter.Contains("Gişe Yok")) assignedCounter = "-";
 
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(fullName))
             {
@@ -114,7 +131,16 @@ namespace QueueManagementSystem.Counter
                 return;
             }
 
-            var userData = new { Id = _editingUserId ?? 0, FullName = fullName, Username = username, Password = password, Role = role, IsActive = true };
+            var userData = new
+            {
+                Id = _editingUserId ?? 0,
+                FullName = fullName,
+                Username = username,
+                Password = password,
+                Role = role,
+                AssignedCounter = assignedCounter,
+                IsActive = true
+            };
 
             try
             {
@@ -138,13 +164,29 @@ namespace QueueManagementSystem.Counter
 
         private void BtnEditUser_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is UserDto selectedUser)
+            if (sender is Button btn && btn.Tag != null)
             {
+                dynamic selectedUser = btn.Tag;
                 _editingUserId = selectedUser.Id;
                 txtFullName.Text = selectedUser.FullName;
                 txtNewUsername.Text = selectedUser.Username;
                 txtNewPassword.Clear();
-                cmbNewUserRole.SelectedIndex = selectedUser.Role.Contains("Admin") ? 1 : 0;
+
+                string userRole = selectedUser.Role?.ToString() ?? "";
+                cmbNewUserRole.SelectedIndex = userRole.Contains("Admin") ? 1 : 0;
+
+                cmbAssignedCounter.SelectedIndex = 0;
+                string userCounter = selectedUser.AssignedCounter?.ToString() ?? "-";
+                if (userCounter == "-") userCounter = "Gişe Yok (Admin)";
+
+                foreach (ComboBoxItem item in cmbAssignedCounter.Items)
+                {
+                    if (item.Content.ToString() == userCounter)
+                    {
+                        cmbAssignedCounter.SelectedItem = item;
+                        break;
+                    }
+                }
 
                 txtFormTitle.Text = "Kullanıcıyı Güncelle";
                 btnSaveUser.Content = "💾 Kaydet";
@@ -162,6 +204,7 @@ namespace QueueManagementSystem.Counter
             txtNewUsername.Clear();
             txtNewPassword.Clear();
             cmbNewUserRole.SelectedIndex = 0;
+            cmbAssignedCounter.SelectedIndex = 0;
             txtFormTitle.Text = "Yeni Kullanıcı Ekle";
             btnSaveUser.Content = "➕ Kullanıcı Ekle";
             btnSaveUser.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(59, 130, 246));
@@ -184,7 +227,7 @@ namespace QueueManagementSystem.Counter
             }
         }
 
-        // --- RAPORLAR METOTLARI ---
+        // --- RAPORLAR VE PERFORMANS ---
         private async void BtnFilter_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn)
@@ -194,6 +237,7 @@ namespace QueueManagementSystem.Counter
                 txtAvgWaitTime.Text = "...";
                 txtBusiestHour.Text = "...";
                 await LoadReportDataAsync(selectedFilter);
+                await LoadPerformanceDataAsync(selectedFilter);
             }
         }
 
@@ -216,21 +260,59 @@ namespace QueueManagementSystem.Counter
             }
         }
 
-        private async Task LoadPerformanceDataAsync()
+        private async Task LoadPerformanceDataAsync(string period = "Günlük")
         {
             if (_apiService == null) return;
             try
             {
-                dgPerformance.ItemsSource = await _apiService.GetPerformanceDataAsync();
+                var perfData = await _apiService.GetPerformanceDataAsync(period);
+                dgPerformance.ItemsSource = perfData;
+
+                if (perfData != null && perfData.Count > 0)
+                {
+                    int totalServedCount = 0;
+                    string bestStaffName = "- Yok -";
+                    int maxServed = -1;
+
+                    foreach (var staff in perfData)
+                    {
+                        if (int.TryParse(staff.Served, out int served))
+                        {
+                            totalServedCount += served;
+
+                            if (served > maxServed)
+                            {
+                                maxServed = served;
+                                bestStaffName = staff.Name;
+                            }
+                        }
+                    }
+
+                    txtTotalServed.Text = $"{totalServedCount} Kişi";
+                    txtBestStaffName.Text = maxServed > 0 ? bestStaffName : "- Yok -";
+                }
+                else
+                {
+                    txtTotalServed.Text = "0 Kişi";
+                    txtBestStaffName.Text = "- Yok -";
+                }
             }
-            catch (Exception) { dgPerformance.ItemsSource = new List<StaffPerformanceDto>(); }
+            catch (Exception)
+            {
+                dgPerformance.ItemsSource = new List<StaffPerformanceDto>();
+            }
         }
 
         private void BtnExportExcel_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                var data = dgPerformance.ItemsSource as List<StaffPerformanceDto> ?? GetMockData();
+                var data = dgPerformance.ItemsSource as List<StaffPerformanceDto>;
+                if (data == null || data.Count == 0)
+                {
+                    MessageBox.Show("Dışa aktarılacak veri bulunamadı!", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
                 string fileName = _printExportService.ExportToExcel(data);
                 MessageBox.Show($"Excel raporu masaüstüne kaydedildi:\n\n{fileName}", "Başarılı", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -241,28 +323,65 @@ namespace QueueManagementSystem.Counter
         {
             try
             {
-                var data = dgPerformance.ItemsSource as List<StaffPerformanceDto> ?? GetMockData();
+                var data = dgPerformance.ItemsSource as List<StaffPerformanceDto>;
+                if (data == null || data.Count == 0)
+                {
+                    MessageBox.Show("Dışa aktarılacak veri bulunamadı!", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
                 string fileName = _printExportService.ExportToPdf(data);
                 MessageBox.Show($"PDF raporu masaüstüne kaydedildi:\n\n{fileName}", "Başarılı", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex) { MessageBox.Show($"Hata:\n{ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error); }
         }
 
-        private List<StaffPerformanceDto> GetMockData() => new List<StaffPerformanceDto>
-        {
-            new StaffPerformanceDto { Name = "Ahmet Yılmaz", Served = "452", AvgTime = "03:15", BreakTime = "45 dk", Status = "🟢 Aktif" }
-        };
-
-        // --- SİSTEM & DONANIM METOTLARI ---
+        // --- SİSTEM AYARLARI ---
         private void LoadSystemSettings()
         {
             var config = _configService.LoadSettings();
-
-            // API Kurulumu
             txtApiUrl.Text = config.ApiUrl;
             _apiService = new ApiService(config.ApiUrl);
 
-            // Yazıcı Kurulumu
+            // --- YENİ EKLENEN KISIM: YAZDIRMA AYARINI EKRANA YÜKLE ---
+            // Eğer XAML'a chkIsPrintingEnabled eklemediysen bu satır hata verebilir. (Aşağıdaki nota bak)
+            if (chkIsPrintingEnabled != null)
+            {
+                chkIsPrintingEnabled.IsChecked = config.IsPrintingEnabled;
+            }
+            // ---------------------------------------------------------
+
+            // --- AKTİF COM PORTLARINI BİLGİSAYARDAN OTOMATİK ÇEK ---
+            cmbComPort.Items.Clear();
+            string[] availablePorts = SerialPort.GetPortNames();
+
+            foreach (string port in availablePorts)
+            {
+                cmbComPort.Items.Add(new ComboBoxItem { Content = port });
+            }
+
+            if (cmbComPort.Items.Count == 0)
+            {
+                cmbComPort.Items.Add(new ComboBoxItem { Content = "COM5" });
+            }
+
+            if (!string.IsNullOrEmpty(config.ArduinoPort))
+            {
+                foreach (ComboBoxItem item in cmbComPort.Items)
+                {
+                    if (item.Content.ToString() == config.ArduinoPort)
+                    {
+                        cmbComPort.SelectedItem = item;
+                        break;
+                    }
+                }
+            }
+
+            if (cmbComPort.SelectedIndex == -1 && cmbComPort.Items.Count > 0)
+            {
+                cmbComPort.SelectedIndex = 0;
+            }
+
+            // YAZICI YÜKLEME KISMI
             cmbPrinters.Items.Clear();
             try
             {
@@ -283,11 +402,14 @@ namespace QueueManagementSystem.Counter
         {
             string apiUrl = txtApiUrl.Text.Trim();
             if (!apiUrl.EndsWith("/")) apiUrl += "/";
-
             var config = new AppConfig
             {
                 ApiUrl = apiUrl,
-                PrinterName = (cmbPrinters.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? ""
+                PrinterName = (cmbPrinters.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "",
+                ArduinoPort = (cmbComPort.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "COM5",
+
+                // YENİ EKLENDİ: Arayüzdeki CheckBox değerini okuyup config nesnesine atıyoruz
+                IsPrintingEnabled = chkIsPrintingEnabled.IsChecked == true
             };
 
             if (_configService.SaveSettings(config))
@@ -295,10 +417,7 @@ namespace QueueManagementSystem.Counter
                 _apiService = new ApiService(apiUrl);
                 MessageBox.Show("Ayarlar kalıcı olarak kaydedildi.", "Başarılı", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-            else
-            {
-                MessageBox.Show("Ayarlar kaydedilemedi.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            else MessageBox.Show("Ayarlar kaydedilemedi.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private void BtnPrintTest_Click(object sender, RoutedEventArgs e)
@@ -307,7 +426,6 @@ namespace QueueManagementSystem.Counter
             {
                 string printerName = selectedItem.Content.ToString();
                 if (printerName == "Yazıcı Bulunamadı" || printerName == "Yazıcı Servisi Kapalı") return;
-
                 try
                 {
                     _printExportService.PrintTestTicket(printerName);
@@ -319,7 +437,6 @@ namespace QueueManagementSystem.Counter
 
         private async void BtnTestApi_Click(object sender, RoutedEventArgs e)
         {
-            // Hızlı Test
             string url = txtApiUrl.Text.Trim();
             if (!url.EndsWith("/")) url += "/";
             var tempApi = new ApiService(url);

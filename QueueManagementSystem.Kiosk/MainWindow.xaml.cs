@@ -15,8 +15,12 @@ namespace QueueManagementSystem.Kiosk
     public partial class MainWindow : Window
     {
         private static readonly HttpClient _httpClient = new HttpClient();
-        private string _apiUrl = "https://localhost:7146/";
+
+        // YENİ EKLENDİ: Kiosk kendi bilgisayarındaki (localhost) 5000 portuna bağlanır
+        private string _apiUrl = "http://localhost:5000/";
+
         private string _printerName = "POSPrinter POS80";
+        private bool _isPrintingEnabled = true;
         private readonly string _configFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
 
         public MainWindow()
@@ -41,6 +45,8 @@ namespace QueueManagementSystem.Kiosk
 
                         if (!string.IsNullOrWhiteSpace(config.PrinterName))
                             _printerName = config.PrinterName;
+
+                        _isPrintingEnabled = config.IsPrintingEnabled;
                     }
                 }
             }
@@ -76,7 +82,11 @@ namespace QueueManagementSystem.Kiosk
                     int waitingCount = result?.WaitingCount ?? 0;
                     string serviceNameHeader = $"{serviceType.ToUpper()} İŞLEMLERİ";
 
-                    PrintTermalTicket(realTicketNumber, DateTime.Now, serviceNameHeader, waitingCount);
+                    if (_isPrintingEnabled)
+                    {
+                        PrintTermalTicket(realTicketNumber, DateTime.Now, serviceNameHeader, waitingCount);
+                    }
+
                     await ShowTicketOnScreenAsync(realTicketNumber);
                 }
                 else
@@ -118,7 +128,6 @@ namespace QueueManagementSystem.Kiosk
                 doc.PagePadding = new Thickness(0);
                 doc.FontFamily = new System.Windows.Media.FontFamily("Consolas");
 
-                // 1 ve 2. BÖLÜM: LOGO VE BAŞLIKLAR YAN YANA
                 Grid headerGrid = new Grid();
                 headerGrid.Margin = new Thickness(0, 0, 0, 2);
                 headerGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
@@ -138,7 +147,6 @@ namespace QueueManagementSystem.Kiosk
                     headerGrid.Children.Add(logoImage);
                 }
 
-                // Yazılar için panel 
                 StackPanel textPanel = new StackPanel();
                 textPanel.VerticalAlignment = VerticalAlignment.Center;
                 textPanel.HorizontalAlignment = HorizontalAlignment.Left;
@@ -169,7 +177,6 @@ namespace QueueManagementSystem.Kiosk
 
                 doc.Blocks.Add(new BlockUIContainer(headerGrid));
 
-                // 3. HOŞGELDİNİZ 
                 Paragraph welcome = new Paragraph(new Run("HOŞGELDİNİZ"))
                 {
                     TextAlignment = TextAlignment.Center,
@@ -179,7 +186,6 @@ namespace QueueManagementSystem.Kiosk
                 };
                 doc.Blocks.Add(welcome);
 
-                // 4. İŞLEM ADI (Siyah Arka Plan)
                 Border serviceBorder = new Border()
                 {
                     Background = System.Windows.Media.Brushes.Black,
@@ -197,7 +203,6 @@ namespace QueueManagementSystem.Kiosk
                 serviceBorder.Child = serviceText;
                 doc.Blocks.Add(new BlockUIContainer(serviceBorder));
 
-                // 5. BİLET NUMARASI
                 Paragraph ticketNo = new Paragraph(new Run(ticketNumber))
                 {
                     TextAlignment = TextAlignment.Center,
@@ -207,7 +212,6 @@ namespace QueueManagementSystem.Kiosk
                 };
                 doc.Blocks.Add(ticketNo);
 
-                // 6. BEKLEYEN KİŞİ BİLGİSİ
                 Paragraph waitingInfo = new Paragraph(new Run($"Bekleyen: {waitingCount} kişi"))
                 {
                     TextAlignment = TextAlignment.Center,
@@ -216,7 +220,6 @@ namespace QueueManagementSystem.Kiosk
                 };
                 doc.Blocks.Add(waitingInfo);
 
-                // İnce Ayraç Çizgisi
                 Border line = new Border()
                 {
                     BorderBrush = System.Windows.Media.Brushes.Black,
@@ -225,7 +228,6 @@ namespace QueueManagementSystem.Kiosk
                 };
                 doc.Blocks.Add(new BlockUIContainer(line));
 
-                // 7. TARİH, GÜN VE SAAT
                 var trCulture = new System.Globalization.CultureInfo("tr-TR");
                 string formattedDate = date.ToString("dd.MM.yyyy dddd HH:mm", trCulture);
 
@@ -233,17 +235,16 @@ namespace QueueManagementSystem.Kiosk
                 {
                     TextAlignment = TextAlignment.Center,
                     FontSize = 11,
-                    Margin = new Thickness(0, 2, 0, 0) // Alt boşluğu tamamen sıfırladım, notun üstüne verdim
+                    Margin = new Thickness(0, 2, 0, 0)
                 };
                 doc.Blocks.Add(dateInfo);
 
-                // 8. ÇEVRE DOSTU NOT (Aşağı çekildi, kalın yapıldı ve metin düzeltildi)
                 Paragraph footerNote = new Paragraph(new Run("Lütfen biletlerinizi yere atmayınız."))
                 {
                     TextAlignment = TextAlignment.Center,
-                    FontWeight = FontWeights.Bold, // Yazı kalın yapıldı
+                    FontWeight = FontWeights.Bold,
                     FontSize = 10,
-                    Margin = new Thickness(0, 10, 0, 15) // Üstten (10) ve alttan (15) boşluk verilerek kesme alanına doğru itildi
+                    Margin = new Thickness(0, 10, 0, 15)
                 };
                 doc.Blocks.Add(footerNote);
 
@@ -261,6 +262,7 @@ namespace QueueManagementSystem.Kiosk
     {
         public string ApiUrl { get; set; }
         public string PrinterName { get; set; }
+        public bool IsPrintingEnabled { get; set; } = true;
     }
 
     public class TicketResponse

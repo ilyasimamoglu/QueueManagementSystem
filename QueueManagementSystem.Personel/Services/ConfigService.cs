@@ -21,11 +21,13 @@ namespace QueueManagementSystem.Counter.Services
             }
             catch { }
 
-            // Dosya yoksa veya okunamazsa varsayılan ayarları döndür
+            // Dosya yoksa veya okunamazsa Kiosk bilgisayarının IP adresini varsayılan yap
             return new AppConfig
             {
-                ApiUrl = "https://localhost:7146/",
-                PrinterName = ""
+                ApiUrl = "http://10.40.80.167:5000/", // YENİ EKLENDİ: Kiosk PC IP Adresi
+                PrinterName = "",
+                ArduinoPort = "COM5",
+                IsPrintingEnabled = true
             };
         }
 

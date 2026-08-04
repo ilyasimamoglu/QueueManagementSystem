@@ -190,6 +190,7 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
+                        <!-- ÜST BİLGİ VE SAAT -->
                         <Grid Grid.Row="0" Margin="0,0,0,25">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="Sistem Durumu: " FontSize="14" Foreground="#94A3B8"/>
@@ -200,7 +201,7 @@
                                 <TextBlock x:Name="txtCurrentTime" Text="00:00:00" FontSize="14" FontWeight="Bold" Foreground="#F8FAFC" FontFamily="Consolas" Margin="0,0,20,0"/>
                                 <Border Width="1" Background="#334155" Margin="0,0,20,0" Height="20"/>
                                 <TextBlock Text="Hoş Geldiniz, " FontSize="14" Foreground="#94A3B8"/>
-                                <TextBlock Text="Admin" FontSize="14" FontWeight="Bold" Foreground="#F8FAFC"/>
+                                <TextBlock x:Name="txtAdminName" Text="Yükleniyor..." FontSize="14" FontWeight="Bold" Foreground="#F8FAFC"/>
                             </StackPanel>
                         </Grid>
 
@@ -209,28 +210,24 @@
                                 <StackPanel>
                                     <TextBlock Text="BUGÜNKÜ MÜŞTERİ" FontSize="12" FontWeight="Bold" Foreground="#94A3B8"/>
                                     <TextBlock x:Name="txtTotalCustomers" Text="0" FontSize="32" FontWeight="Bold" Foreground="#3B82F6" Margin="0,5,0,0"/>
-                                    <TextBlock Text="Düne göre +12%" FontSize="11" Foreground="#10B981" Margin="0,5,0,0"/>
                                 </StackPanel>
                             </Border>
                             <Border Background="#1E293B" CornerRadius="12" Padding="20" Margin="0,0,15,0">
                                 <StackPanel>
                                     <TextBlock Text="AKTİF GİŞE / TOPLAM" FontSize="12" FontWeight="Bold" Foreground="#94A3B8"/>
                                     <TextBlock x:Name="txtActiveCounters" Text="0 / 5" FontSize="32" FontWeight="Bold" Foreground="#10B981" Margin="0,5,0,0"/>
-                                    <TextBlock Text="Personel kapasitesi: %80" FontSize="11" Foreground="#94A3B8" Margin="0,5,0,0"/>
                                 </StackPanel>
                             </Border>
                             <Border Background="#1E293B" CornerRadius="12" Padding="20" Margin="0,0,15,0">
                                 <StackPanel>
                                     <TextBlock Text="ŞU AN BEKLEYEN" FontSize="12" FontWeight="Bold" Foreground="#94A3B8"/>
                                     <TextBlock x:Name="txtWaitingCustomers" Text="0" FontSize="32" FontWeight="Bold" Foreground="#F59E0B" Margin="0,5,0,0"/>
-                                    <TextBlock Text="Kuyruk yoğunluğu" FontSize="11" Foreground="#EF4444" Margin="0,5,0,0"/>
                                 </StackPanel>
                             </Border>
                             <Border Background="#1E293B" CornerRadius="12" Padding="20">
                                 <StackPanel>
                                     <TextBlock Text="ORTALAMA BEKLEME" FontSize="12" FontWeight="Bold" Foreground="#94A3B8"/>
-                                    <TextBlock Text="04:15" FontSize="32" FontWeight="Bold" Foreground="#F8FAFC" FontFamily="Consolas" Margin="0,5,0,0"/>
-                                    <TextBlock Text="Dakika : Saniye" FontSize="11" Foreground="#94A3B8" Margin="0,5,0,0"/>
+                                    <TextBlock x:Name="txtDashboardAvgWait" Text="00:00" FontSize="32" FontWeight="Bold" Foreground="#F8FAFC" FontFamily="Consolas" Margin="0,5,0,0"/>
                                 </StackPanel>
                             </Border>
                         </UniformGrid>
@@ -255,45 +252,40 @@
                                             <RowDefinition Height="*"/>
                                         </Grid.RowDefinitions>
                                         <TextBlock Grid.Row="0" Text="Haftalık Yoğunluk Grafiği" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,15"/>
-                                        <Border Grid.Row="1" Background="#0F172A" CornerRadius="8" BorderBrush="#334155" BorderThickness="1" ClipToBounds="True">
-                                            <Grid Margin="15">
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="*"/>
-                                                    <RowDefinition Height="Auto"/>
-                                                </Grid.RowDefinitions>
-                                                <UniformGrid Rows="4" Columns="1" Margin="0,0,0,5">
+                                        <Border Grid.Row="1" Background="#0F172A" CornerRadius="8" BorderBrush="#334155" BorderThickness="1" ClipToBounds="True" Padding="15">
+                                            <Grid>
+                                                <UniformGrid Rows="4" Columns="1" Margin="0,0,0,30">
                                                     <Border BorderBrush="#1E293B" BorderThickness="0,0,0,1"/>
                                                     <Border BorderBrush="#1E293B" BorderThickness="0,0,0,1"/>
                                                     <Border BorderBrush="#1E293B" BorderThickness="0,0,0,1"/>
                                                     <Border BorderBrush="#1E293B" BorderThickness="0,0,0,1"/>
                                                 </UniformGrid>
-                                                <Grid Margin="0,10,0,0" VerticalAlignment="Bottom">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <Border Grid.Column="0" Background="#6B468D" Margin="8,10,8,0" CornerRadius="3,3,0,0"/>
-                                                    <Border Grid.Column="1" Background="#3B82F6" Margin="8,50,8,0" CornerRadius="3,3,0,0"/>
-                                                    <Border Grid.Column="2" Background="#06B6D4" Margin="8,75,8,0" CornerRadius="3,3,0,0"/>
-                                                    <Border Grid.Column="3" Background="#10B981" Margin="8,60,8,0" CornerRadius="3,3,0,0"/>
-                                                    <Border Grid.Column="4" Background="#F59E0B" Margin="8,30,8,0" CornerRadius="3,3,0,0"/>
-                                                    <Border Grid.Column="5" Background="#334155" Margin="8,100,8,0" CornerRadius="3,3,0,0"/>
-                                                    <Border Grid.Column="6" Background="#334155" Margin="8,100,8,0" CornerRadius="3,3,0,0"/>
-                                                </Grid>
-                                                <UniformGrid Grid.Row="1" Columns="7" Margin="0,10,0,0">
-                                                    <TextBlock Text="Pzt" Foreground="#94A3B8" HorizontalAlignment="Center" FontSize="11"/>
-                                                    <TextBlock Text="Sal" Foreground="#94A3B8" HorizontalAlignment="Center" FontSize="11"/>
-                                                    <TextBlock Text="Çar" Foreground="#94A3B8" HorizontalAlignment="Center" FontSize="11"/>
-                                                    <TextBlock Text="Per" Foreground="#94A3B8" HorizontalAlignment="Center" FontSize="11"/>
-                                                    <TextBlock Text="Cum" Foreground="#94A3B8" HorizontalAlignment="Center" FontSize="11"/>
-                                                    <TextBlock Text="Cmt" Foreground="#64748B" HorizontalAlignment="Center" FontSize="11"/>
-                                                    <TextBlock Text="Paz" Foreground="#64748B" HorizontalAlignment="Center" FontSize="11"/>
-                                                </UniformGrid>
+                                                <ItemsControl x:Name="icWeeklyChart" Margin="0,0,0,25">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <UniformGrid Columns="7"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid VerticalAlignment="Bottom" Height="120" Margin="8,0,8,0">
+                                                                <Border Background="{Binding Color}" Height="{Binding Height}" CornerRadius="3,3,0,0" VerticalAlignment="Bottom" ToolTip="{Binding CountText}"/>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <ItemsControl x:Name="icWeeklyLabels" VerticalAlignment="Bottom">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <UniformGrid Columns="7"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Label}" Foreground="#94A3B8" HorizontalAlignment="Center" FontSize="11"/>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
                                             </Grid>
                                         </Border>
                                     </Grid>
@@ -307,128 +299,54 @@
                                         </Grid.RowDefinitions>
                                         <TextBlock Grid.Row="0" Text="Saatlik Yoğunluk (Bugün)" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,15"/>
                                         <Border Grid.Row="1" Background="#0F172A" CornerRadius="8" BorderBrush="#334155" BorderThickness="1" Padding="15">
-                                            <StackPanel VerticalAlignment="Center">
-                                                <Grid Margin="0,0,0,10">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="40"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Text="08:00" Foreground="#94A3B8" VerticalAlignment="Center" FontSize="12"/>
-                                                    <Border Grid.Column="1" Background="#3B82F6" Height="10" Width="60" CornerRadius="2" HorizontalAlignment="Left"/>
-                                                </Grid>
-                                                <Grid Margin="0,0,0,10">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="40"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Text="09:00" Foreground="#94A3B8" VerticalAlignment="Center" FontSize="12"/>
-                                                    <Border Grid.Column="1" Background="#3B82F6" Height="10" Width="100" CornerRadius="2" HorizontalAlignment="Left"/>
-                                                </Grid>
-                                                <Grid Margin="0,0,0,10">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="40"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Text="10:00" Foreground="#94A3B8" VerticalAlignment="Center" FontSize="12"/>
-                                                    <Border Grid.Column="1" Background="#10B981" Height="10" Width="140" CornerRadius="2" HorizontalAlignment="Left"/>
-                                                </Grid>
-                                                <Grid Margin="0,0,0,10">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="40"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Text="11:00" Foreground="#94A3B8" VerticalAlignment="Center" FontSize="12"/>
-                                                    <Border Grid.Column="1" Background="#10B981" Height="10" Width="180" CornerRadius="2" HorizontalAlignment="Left"/>
-                                                </Grid>
-                                                <Grid Margin="0,0,0,10">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="40"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Text="12:00" Foreground="#F59E0B" FontWeight="Bold" VerticalAlignment="Center" FontSize="12"/>
-                                                    <Border Grid.Column="1" Background="#F59E0B" Height="10" Width="240" CornerRadius="2" HorizontalAlignment="Left"/>
-                                                </Grid>
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="40"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Text="13:00" Foreground="#94A3B8" VerticalAlignment="Center" FontSize="12"/>
-                                                    <Border Grid.Column="1" Background="#3B82F6" Height="10" Width="120" CornerRadius="2" HorizontalAlignment="Left"/>
-                                                </Grid>
-                                            </StackPanel>
+                                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                                <ItemsControl x:Name="icHourlyChart">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid Margin="0,0,0,10">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="45"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock Text="{Binding Label}" Foreground="#94A3B8" VerticalAlignment="Center" FontSize="12"/>
+                                                                <Border Grid.Column="1" Background="{Binding Color}" Height="12" Width="{Binding Width}" CornerRadius="2" HorizontalAlignment="Left" ToolTip="{Binding CountText}"/>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </ScrollViewer>
                                         </Border>
                                     </Grid>
                                 </Border>
                             </Grid>
 
                             <Border Grid.Column="2" Background="#1E293B" CornerRadius="12" Padding="25">
-                                <StackPanel>
-                                    <TextBlock Text="Hızlı Gişe Yönetimi" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,20"/>
-                                    <!-- Gişe 1 -->
-                                    <Grid Margin="0,0,0,15">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        <Grid Grid.Row="0" Margin="0,0,0,5">
-                                            <TextBlock Text="🖥️ Gişe 1" Foreground="#F8FAFC" VerticalAlignment="Center" FontSize="15" FontWeight="Bold"/>
-                                            <TextBlock Text="🟢 Aktif" Foreground="#10B981" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                        </Grid>
-                                        <Grid Grid.Row="1">
-                                            <TextBlock Text="Opr: Ahmet Y." Foreground="#94A3B8" FontSize="12" VerticalAlignment="Center"/>
-                                            <TextBlock Text="12 Müşteri" Foreground="#3B82F6" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </Grid>
-                                    <Border BorderBrush="#334155" BorderThickness="0,0,0,1" Margin="0,0,0,15"/>
-                                    <!-- Gişe 2 -->
-                                    <Grid Margin="0,0,0,15">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        <Grid Grid.Row="0" Margin="0,0,0,5">
-                                            <TextBlock Text="🖥️ Gişe 2" Foreground="#F8FAFC" VerticalAlignment="Center" FontSize="15" FontWeight="Bold"/>
-                                            <TextBlock Text="🟢 Aktif" Foreground="#10B981" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                        </Grid>
-                                        <Grid Grid.Row="1">
-                                            <TextBlock Text="Opr: Mehmet K." Foreground="#94A3B8" FontSize="12" VerticalAlignment="Center"/>
-                                            <TextBlock Text="8 Müşteri" Foreground="#3B82F6" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </Grid>
-                                    <Border BorderBrush="#334155" BorderThickness="0,0,0,1" Margin="0,0,0,15"/>
-                                    <!-- Gişe 3 -->
-                                    <Grid Margin="0,0,0,15">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        <Grid Grid.Row="0" Margin="0,0,0,5">
-                                            <TextBlock Text="🖥️ Gişe 3" Foreground="#94A3B8" VerticalAlignment="Center" FontSize="15" FontWeight="Bold"/>
-                                            <TextBlock Text="🔴 Pasif" Foreground="#EF4444" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                        </Grid>
-                                        <Grid Grid.Row="1">
-                                            <TextBlock Text="Opr: - Yok -" Foreground="#64748B" FontSize="12" VerticalAlignment="Center"/>
-                                            <TextBlock Text="0 Müşteri" Foreground="#64748B" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </Grid>
-                                    <Border BorderBrush="#334155" BorderThickness="0,0,0,1" Margin="0,0,0,15"/>
-                                    <!-- Gişe 4 -->
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        <Grid Grid.Row="0" Margin="0,0,0,5">
-                                            <TextBlock Text="🖥️ Gişe 4" Foreground="#F8FAFC" VerticalAlignment="Center" FontSize="15" FontWeight="Bold"/>
-                                            <TextBlock Text="🟢 Aktif" Foreground="#10B981" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                        </Grid>
-                                        <Grid Grid.Row="1">
-                                            <TextBlock Text="Opr: Ayşe D." Foreground="#94A3B8" FontSize="12" VerticalAlignment="Center"/>
-                                            <TextBlock Text="18 Müşteri" Foreground="#3B82F6" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </Grid>
-                                </StackPanel>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Text="Hızlı Gişe Yönetimi" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,20"/>
+                                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl x:Name="icCountersStatus">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel>
+                                                        <Grid Margin="0,0,0,5">
+                                                            <TextBlock Text="{Binding CounterName}" Foreground="#F8FAFC" VerticalAlignment="Center" FontSize="15" FontWeight="Bold"/>
+                                                            <TextBlock Text="{Binding Status}" Foreground="{Binding StatusColor}" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                        </Grid>
+                                                        <Grid Margin="0,0,0,15">
+                                                            <TextBlock Text="{Binding OperatorName}" Foreground="#94A3B8" FontSize="12" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding ServedToday}" Foreground="#3B82F6" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                        </Grid>
+                                                        <Border BorderBrush="#334155" BorderThickness="0,0,0,1" Margin="0,0,0,15"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Grid>
                             </Border>
                         </Grid>
                     </Grid>
@@ -441,35 +359,36 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-
                         <TextBlock FontSize="24" FontWeight="Bold" Foreground="White" Grid.Row="0" Margin="0,0,0,25" Text="Kullanıcı ve Yetki Yönetimi"/>
-
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="350"/>
                                 <ColumnDefinition Width="20"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-
                             <Border Background="#1E293B" CornerRadius="12" Grid.Column="0" Padding="25">
                                 <StackPanel>
                                     <TextBlock x:Name="txtFormTitle" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,25" Text="Yeni Kullanıcı Ekle"/>
-
                                     <TextBlock FontSize="13" Foreground="#94A3B8" Margin="0,0,0,8" Text="Ad Soyad"/>
                                     <TextBox x:Name="txtFullName" Background="#0F172A" BorderThickness="1" BorderBrush="#334155" FontSize="14" Foreground="#F8FAFC" Margin="0,0,0,15" Padding="12"/>
-
                                     <TextBlock FontSize="13" Foreground="#94A3B8" Margin="0,0,0,8" Text="Kullanıcı Adı"/>
                                     <TextBox x:Name="txtNewUsername" Background="#0F172A" BorderThickness="1" BorderBrush="#334155" FontSize="14" Foreground="#F8FAFC" Margin="0,0,0,15" Padding="12"/>
-
                                     <TextBlock FontSize="13" Foreground="#94A3B8" Margin="0,0,0,8" Text="Şifre (Değiştirmek için doldurun)"/>
                                     <PasswordBox x:Name="txtNewPassword" Background="#0F172A" BorderThickness="1" BorderBrush="#334155" FontSize="14" Foreground="#F8FAFC" Margin="0,0,0,15" Padding="12"/>
-
                                     <TextBlock FontSize="13" FontWeight="Bold" Foreground="#3B82F6" Margin="0,0,0,8" Text="Rol (Yetki)"/>
-                                    <ComboBox x:Name="cmbNewUserRole" FontSize="14" Margin="0,0,0,25" SelectedIndex="0">
+                                    <ComboBox x:Name="cmbNewUserRole" FontSize="14" Margin="0,0,0,15" SelectedIndex="0">
                                         <ComboBoxItem Content="Gişe Personeli"/>
                                         <ComboBoxItem Content="Admin (Yönetici)"/>
                                     </ComboBox>
-
+                                    <TextBlock FontSize="13" Foreground="#94A3B8" Margin="0,0,0,8" Text="Atanacak Gişe"/>
+                                    <ComboBox x:Name="cmbAssignedCounter" FontSize="14" Margin="0,0,0,25" SelectedIndex="0">
+                                        <ComboBoxItem Content="Gişe Yok (Admin)"/>
+                                        <ComboBoxItem Content="Gişe 1"/>
+                                        <ComboBoxItem Content="Gişe 2"/>
+                                        <ComboBoxItem Content="Gişe 3"/>
+                                        <ComboBoxItem Content="Gişe 4"/>
+                                        <ComboBoxItem Content="Gişe 5"/>
+                                    </ComboBox>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -480,7 +399,6 @@
                                     </Grid>
                                 </StackPanel>
                             </Border>
-
                             <Border Background="#1E293B" CornerRadius="12" Grid.Column="2" Padding="25">
                                 <Grid>
                                     <Grid.RowDefinitions>
@@ -491,27 +409,29 @@
                                     <TextBlock FontSize="18" FontWeight="Bold" Foreground="#F8FAFC" Grid.Row="0" Margin="0,0,0,20" Text="Sistemdeki Kullanıcılar"/>
                                     <Grid Grid.Row="1" Margin="0,0,0,10">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="2*"/>
                                             <ColumnDefinition Width="1.5*"/>
-                                            <ColumnDefinition Width="1.5*"/>
+                                            <ColumnDefinition Width="1*"/>
+                                            <ColumnDefinition Width="1*"/>
+                                            <ColumnDefinition Width="1*"/>
                                             <ColumnDefinition Width="110"/>
                                         </Grid.ColumnDefinitions>
                                         <TextBlock FontWeight="Bold" Foreground="#94A3B8" Grid.Column="0" Text="Ad Soyad"/>
                                         <TextBlock FontWeight="Bold" Foreground="#94A3B8" Grid.Column="1" Text="Kullanıcı Adı"/>
                                         <TextBlock FontWeight="Bold" Foreground="#94A3B8" Grid.Column="2" Text="Rol"/>
-                                        <TextBlock FontWeight="Bold" Foreground="#94A3B8" Grid.Column="3" HorizontalAlignment="Center" Text="İşlemler"/>
+                                        <TextBlock FontWeight="Bold" Foreground="#94A3B8" Grid.Column="3" Text="Atanan Gişe"/>
+                                        <TextBlock FontWeight="Bold" Foreground="#94A3B8" Grid.Column="4" HorizontalAlignment="Center" Text="İşlemler"/>
                                     </Grid>
                                     <Border Background="#334155" Grid.Row="1" Height="1" Margin="0,0,0,-5" VerticalAlignment="Bottom"/>
-
                                     <ScrollViewer Grid.Row="2" Margin="0,15,0,0" VerticalScrollBarVisibility="Auto">
                                         <ItemsControl x:Name="icUsers">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
                                                     <Grid Margin="0,0,0,15">
                                                         <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="2*"/>
                                                             <ColumnDefinition Width="1.5*"/>
-                                                            <ColumnDefinition Width="1.5*"/>
+                                                            <ColumnDefinition Width="1*"/>
+                                                            <ColumnDefinition Width="1*"/>
+                                                            <ColumnDefinition Width="1*"/>
                                                             <ColumnDefinition Width="110"/>
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Grid.Column="0" Orientation="Horizontal">
@@ -520,8 +440,8 @@
                                                         </StackPanel>
                                                         <TextBlock Foreground="#94A3B8" Grid.Column="1" Text="{Binding Username}" VerticalAlignment="Center"/>
                                                         <TextBlock Foreground="{Binding RoleColor}" FontWeight="Bold" Grid.Column="2" Text="{Binding Role}" VerticalAlignment="Center"/>
-
-                                                        <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                                                        <TextBlock Foreground="#3B82F6" FontWeight="SemiBold" Grid.Column="3" Text="{Binding AssignedCounter}" VerticalAlignment="Center"/>
+                                                        <StackPanel Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Right">
                                                             <Button Click="BtnEditUser_Click" Tag="{Binding}" Background="#F59E0B" BorderThickness="0" Content="✏️" Cursor="Hand" Foreground="White" Padding="12,6" Margin="0,0,5,0" Style="{StaticResource RoundedButton8}" ToolTip="Düzenle/Şifre Değiştir"/>
                                                             <Button Click="BtnDeleteUser_Click" Tag="{Binding Id}" Background="#EF4444" BorderThickness="0" Content="Sil" Cursor="Hand" Foreground="White" Padding="15,6" Style="{StaticResource RoundedButton8}"/>
                                                         </StackPanel>
@@ -543,19 +463,16 @@
                             <ColumnDefinition Width="220"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-
                         <StackPanel Grid.Column="0" Margin="0,0,20,0">
                             <TextBlock Text="Filtrele" FontSize="16" FontWeight="Bold" Margin="0,0,0,15" Foreground="#F8FAFC"/>
                             <Button Click="BtnFilter_Click" Content="Günlük" Margin="0,5" Padding="12" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#334155" Style="{StaticResource RoundedButton8}"/>
                             <Button Click="BtnFilter_Click" Content="Haftalık" Margin="0,5" Padding="12" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#334155" Style="{StaticResource RoundedButton8}"/>
                             <Button Click="BtnFilter_Click" Content="Aylık" Margin="0,5" Padding="12" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#334155" Style="{StaticResource RoundedButton8}"/>
                             <Button Click="BtnFilter_Click" Content="Yıllık" Margin="0,5" Padding="12" Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#334155" Style="{StaticResource RoundedButton8}"/>
-
                             <TextBlock Text="Dışa Aktar" FontSize="16" FontWeight="Bold" Margin="0,30,0,15" Foreground="#F8FAFC"/>
                             <Button Click="BtnExportExcel_Click" Content="📊 Excel" Margin="0,5" Padding="12" Background="#10B981" Foreground="White" FontWeight="Bold" Style="{StaticResource RoundedButton8}" Cursor="Hand"/>
                             <Button Click="BtnExportPdf_Click" Content="📄 PDF" Margin="0,5" Padding="12" Background="#EF4444" Foreground="White" FontWeight="Bold" Style="{StaticResource RoundedButton8}" Cursor="Hand"/>
                         </StackPanel>
-
                         <WrapPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
                             <Border Background="#1E293B" Width="220" Height="140" CornerRadius="12" Padding="20" Margin="10" BorderBrush="#334155" BorderThickness="1">
                                 <StackPanel VerticalAlignment="Center">
@@ -564,7 +481,6 @@
                                     <TextBlock x:Name="txtBusiestDay" Text="Pazartesi" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#F8FAFC"/>
                                 </StackPanel>
                             </Border>
-
                             <Border Background="#1E293B" Width="220" Height="140" CornerRadius="12" Padding="20" Margin="10" BorderBrush="#334155" BorderThickness="1">
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="Ortalama Bekleme" Foreground="#94A3B8" FontSize="14" HorizontalAlignment="Center"/>
@@ -572,7 +488,6 @@
                                     <TextBlock x:Name="txtAvgWaitTime" Text="03:12" FontSize="26" FontWeight="Bold" Foreground="#F59E0B" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
-
                             <Border Background="#1E293B" Width="220" Height="140" CornerRadius="12" Padding="20" Margin="10" BorderBrush="#334155" BorderThickness="1">
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="En Yoğun Saat" Foreground="#94A3B8" FontSize="14" HorizontalAlignment="Center"/>
@@ -591,23 +506,20 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-
                         <WrapPanel Grid.Row="0" Margin="0,0,0,25">
                             <Border Background="#10B981" CornerRadius="12" Padding="20" Margin="0,0,20,0" Width="280">
                                 <StackPanel>
-                                    <TextBlock Text="Haftanın Personeli" Foreground="White" Opacity="0.9" FontSize="14" FontWeight="Bold"/>
-                                    <TextBlock Text="Ahmet Yılmaz" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,10,0,0"/>
+                                    <TextBlock Text="En Verimli Personel" Foreground="White" Opacity="0.9" FontSize="14" FontWeight="Bold"/>
+                                    <TextBlock x:Name="txtBestStaffName" Text="Yükleniyor..." Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,10,0,0"/>
                                 </StackPanel>
                             </Border>
                             <Border Background="#3B82F6" CornerRadius="12" Padding="20" Width="280">
                                 <StackPanel>
                                     <TextBlock Text="Toplam Hizmet Verilen" Foreground="White" Opacity="0.9" FontSize="14" FontWeight="Bold"/>
-                                    <TextBlock Text="1,452 Kişi" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,10,0,0"/>
+                                    <TextBlock x:Name="txtTotalServed" Text="0 Kişi" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,10,0,0"/>
                                 </StackPanel>
                             </Border>
                         </WrapPanel>
-
-                        <!-- Personel Performans Datagrid -->
                         <Border Grid.Row="1" Background="#1E293B" CornerRadius="12" Padding="5" BorderBrush="#334155" BorderThickness="1">
                             <DataGrid x:Name="dgPerformance" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True">
                                 <DataGrid.Columns>
@@ -629,7 +541,6 @@
                             <ColumnDefinition Width="250"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-
                         <Border Grid.Column="0" Background="#1E293B" BorderBrush="#334155" BorderThickness="0,0,1,0">
                             <ListBox x:Name="lstSettingsMenu" Background="Transparent" BorderThickness="0" Foreground="#94A3B8" Margin="0,20,0,0" SelectedIndex="0">
                                 <ListBox.ItemContainerStyle>
@@ -665,15 +576,12 @@
                                 <ListBoxItem Content="🗄 Veritabanı"/>
                             </ListBox>
                         </Border>
-
                         <TabControl Grid.Column="1" Background="Transparent" BorderThickness="0" SelectedIndex="{Binding ElementName=lstSettingsMenu, Path=SelectedIndex}">
                             <TabControl.ItemContainerStyle>
                                 <Style TargetType="TabItem">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                 </Style>
                             </TabControl.ItemContainerStyle>
-
-                            <!-- 4.0: Sistem Durumu -->
                             <TabItem>
                                 <StackPanel Margin="40,30,40,0" HorizontalAlignment="Left" Width="450">
                                     <TextBlock Text="Genel Sistem Durumu" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,25"/>
@@ -702,15 +610,13 @@
                                     </Border>
                                 </StackPanel>
                             </TabItem>
-
-                            <!-- 4.1: API Ayarları -->
                             <TabItem>
                                 <StackPanel Margin="40,30,40,0" HorizontalAlignment="Left" Width="450">
                                     <TextBlock Text="API Sunucu Bağlantısı" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,25"/>
                                     <Border Background="#1E293B" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
                                         <StackPanel>
                                             <TextBlock Text="Sunucu Adresi" FontSize="13" Foreground="#94A3B8" Margin="0,0,0,8"/>
-                                            <TextBox x:Name="txtApiUrl" FontSize="14" Padding="12" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" BorderThickness="1" Text="https://localhost:7146/api" Margin="0,0,0,15"/>
+                                            <TextBox x:Name="txtApiUrl" FontSize="14" Padding="12" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#334155" BorderThickness="1" Text="http://10.40.80.167:5000/api" Margin="0,0,0,15"/>
                                             <Grid Margin="0,5,0,20">
                                                 <TextBlock Text="Bağlantı Durumu:" Foreground="#94A3B8"/>
                                                 <TextBlock Text="🔴 Bağlı Değil" Foreground="#EF4444" FontWeight="Bold" HorizontalAlignment="Right" x:Name="txtApiStatus"/>
@@ -723,8 +629,6 @@
                                     </Border>
                                 </StackPanel>
                             </TabItem>
-
-                            <!-- 4.2: Arduino Ayarları -->
                             <TabItem>
                                 <StackPanel Margin="40,30,40,0" HorizontalAlignment="Left" Width="450">
                                     <TextBlock Text="Arduino Donanım Kontrolü" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,25"/>
@@ -748,7 +652,7 @@
                                 </StackPanel>
                             </TabItem>
 
-                            <!-- 4.3: Yazıcı Ayarları -->
+                            <!-- İŞTE BURASI: YAZICI VE BİLET AYARLARI SEKMESİ -->
                             <TabItem>
                                 <StackPanel Margin="40,30,40,0" HorizontalAlignment="Left" Width="450">
                                     <TextBlock Text="Yazıcı ve Bilet Ayarları" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,25"/>
@@ -759,13 +663,16 @@
                                                 <ComboBoxItem Content="EPSON TM-T20" IsSelected="True"/>
                                                 <ComboBoxItem Content="Xprinter XP-58"/>
                                             </ComboBox>
+
+                                            <!-- YENİ EKLENEN ONAY KUTUSU (CHECKBOX) -->
+                                            <CheckBox x:Name="chkIsPrintingEnabled" Content="Fiziksel Bilet Yazdırmayı Aktif Et" Foreground="#F8FAFC" FontSize="14" Margin="0,0,0,25" Cursor="Hand" />
+
                                             <Button Click="BtnPrintTest_Click" Style="{StaticResource RoundedButton8}" Content="Sınama Biletini Yazdır" Background="#F59E0B" Foreground="White" FontWeight="Bold" Padding="20,12" BorderThickness="0" Cursor="Hand"/>
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>
                             </TabItem>
 
-                            <!-- 4.4: Veritabanı -->
                             <TabItem>
                                 <StackPanel Margin="40,30,40,0" HorizontalAlignment="Left" Width="450">
                                     <TextBlock Text="SQL Veritabanı Ayarları" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,25"/>
@@ -792,8 +699,6 @@
                                 </StackPanel>
                             </TabItem>
                         </TabControl>
-
-                        <!-- Genel Kaydet Butonu -->
                         <Button Click="BtnSaveSettings_Click" Grid.Column="1" Style="{StaticResource RoundedButton8}" Content="Ayarları Sisteme Kaydet" Background="#10B981" Foreground="White" Padding="30,12" FontSize="15" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,40,30"/>
                     </Grid>
                 </TabItem>

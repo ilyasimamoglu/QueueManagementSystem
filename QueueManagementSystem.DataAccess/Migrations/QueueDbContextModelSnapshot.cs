@@ -50,6 +50,9 @@ namespace QueueManagementSystem.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("CalledAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("datetime2");
 
@@ -78,6 +81,10 @@ namespace QueueManagementSystem.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AssignedCounter")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -95,6 +102,9 @@ namespace QueueManagementSystem.DataAccess.Migrations
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("TotalBreakTimeInMinutes")
+                        .HasColumnType("float");
 
                     b.Property<string>("Username")
                         .IsRequired()
