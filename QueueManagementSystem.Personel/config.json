@@ -1,0 +1,7 @@
+{
+  "ApiUrl": "http://10.40.80.167:5000/",
+  "PrinterName": "Varsayilan_Yazici",
+  "ArduinoPort": "COM3",
+  "IsPrintingEnabled": true,
+  "IsArduinoConnected": true
+}

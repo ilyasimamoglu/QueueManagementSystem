@@ -9,17 +9,17 @@ namespace QueueManagementSystem.Business
 {
     public interface IQueueTicketService
     {
-        // --- MEVCUT METOTLARIN ---
+        // --- BİLET ALMA İŞLEMLERİ ---
         QueueTicket TakeTicket();
-        QueueTicket CallNextTicket(int counterId);
-        void CompleteTicket(int ticketId);
-        List<QueueTicket> GetWaitingTickets();
-        List<QueueTicket> GetCalledTickets();
 
-        // --- YENİ EKLENEN METOTLAR (Gişe ve Kiosk İçin) ---
-
-        // Kiosk'tan Hizmet Tipi ve Öncelik seçilerek bilet alındığında çalışacak
+        // Kiosk'tan Hizmet Tipi (Örn: Öğrenci İşleri, E-Kampüs) seçilerek bilet alındığında çalışacak
         QueueTicket TakeTicket(string serviceType, string priority);
+
+        // --- GİŞE ÇAĞRI İŞLEMLERİ ---
+        // Gişenin hangi hizmet türüne baktığını belirtebilmesi için serviceType parametresi eklendi
+        QueueTicket CallNextTicket(int counterId, string serviceType = null);
+
+        void CompleteTicket(int ticketId);
 
         // Gişeden "Beklemeye Al" dendiğinde çalışacak
         void HoldTicket(int ticketId);
@@ -29,5 +29,11 @@ namespace QueueManagementSystem.Business
 
         // Gişeden "Transfer Et" dendiğinde çalışacak
         void TransferTicket(int ticketId);
+
+        // --- LİSTELEME İŞLEMLERİ ---
+        // Sadece ilgili hizmet türünün bekleyenlerini saymak için serviceType parametresi eklendi
+        List<QueueTicket> GetWaitingTickets(string serviceType = null);
+
+        List<QueueTicket> GetCalledTickets();
     }
 }

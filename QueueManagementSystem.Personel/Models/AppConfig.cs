@@ -6,8 +6,9 @@
         public string PrinterName { get; set; }
         public string ArduinoPort { get; set; }
         public bool IsPrintingEnabled { get; set; } = true;
-     
-       
+        public bool IsArduinoConnected { get; set; } = false;
+
+
 
     }
 }

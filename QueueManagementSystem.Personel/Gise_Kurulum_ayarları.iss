@@ -2,11 +2,11 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 ; Non-commercial use only
 
-#define MyAppName "Sıramatik_Kurulum"
+#define MyAppName "Gise"
 #define MyAppVersion "1.0"
-#define MyAppPublisher "İlyas imamoğlu"
+#define MyAppPublisher "İlyas İmamoğlu"
 #define MyAppURL "https://www.example.com/"
-#define MyAppExeName "QueueManagementSystem.Kiosk.exe"
+#define MyAppExeName "QueueManagementSystem.Counter.exe"
 #define MyAppAssocName MyAppName + " File"
 #define MyAppAssocExt ".myp"
 #define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
@@ -14,7 +14,7 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{CCB88F7D-A05A-4412-A9E9-ECA1CDBE47D8}
+AppId={{F3074EC9-4CCF-49B4-83AB-E0F053047F52}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -36,8 +36,8 @@ ChangesAssociations=yes
 DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
-OutputDir=C:\Users\necoc\Desktop\Kiosk_Exe
-OutputBaseFilename=Kiosk_Kurulum_v1
+OutputDir=C:\Users\necoc\Desktop\Gise_exe
+OutputBaseFilename=Gise_exe
 SolidCompression=yes
 WizardStyle=modern dark
 
@@ -48,15 +48,16 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\necoc\Desktop\Kiosk\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\necoc\Desktop\Kiosk\D3DCompiler_47_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\necoc\Desktop\Kiosk\PenImc_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\necoc\Desktop\Kiosk\PresentationNative_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\necoc\Desktop\Kiosk\vcruntime140_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\necoc\Desktop\Kiosk\wpfgfx_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\necoc\Desktop\Kiosk\QueueManagementSystem.Kiosk.pdb"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\necoc\Desktop\Kiosk\logo.png"; DestDir: "{app}"; Flags: ignoreversion
-; Varsa diğer .dll dosyalarının satırları kalabilir.
+Source: "C:\Users\necoc\Desktop\Gise\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\necoc\Desktop\Gise\config.json"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\necoc\Desktop\Gise\D3DCompiler_47_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\necoc\Desktop\Gise\PenImc_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\necoc\Desktop\Gise\PresentationNative_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\necoc\Desktop\Gise\QueueManagementSystem.Counter.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\necoc\Desktop\Gise\QueueManagementSystem.Counter.pdb"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\necoc\Desktop\Gise\QueueManagementSystem.Entities.pdb"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\necoc\Desktop\Gise\vcruntime140_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\necoc\Desktop\Gise\wpfgfx_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]

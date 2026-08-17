@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,51 +19,64 @@ namespace QueueManagementSystem.Counter
     {
         private readonly HttpClient _httpClient;
         private QueueTicket _currentTicket = null;
-        private ArduinoService _arduinoService;
 
-        // Giriş yapan aktif personelin nesnesi
+        private ArduinoService _localArduinoService;
+        private AppConfig _appConfig;
+
         private UserDto _loggedInUser;
 
-        // Zamanlayıcılar
         private DispatcherTimer _autoRefreshTimer;
         private DispatcherTimer _liveProcessTimer;
         private DispatcherTimer _clockTimer;
-        private DispatcherTimer _breakTimer; // Mola süresi sayacı
+        private DispatcherTimer _breakTimer;
 
         private TimeSpan _currentProcessTime;
-        private TimeSpan _currentBreakTime; // O anki mola süresi
+        private TimeSpan _currentBreakTime;
 
-        // İstatistikler
         private int _totalCalledToday = 0;
         private TimeSpan _totalProcessTimeToday = TimeSpan.Zero;
-        private TimeSpan _totalBreakTimeToday = TimeSpan.Zero; // Toplam mola süresi 
+        private TimeSpan _totalBreakTimeToday = TimeSpan.Zero;
 
         private bool _isOnBreak = false;
 
-        // Constructor'a giriş yapan kullanıcıyı (UserDto) zorunlu kılıyoruz
+        // Seçilen hizmet türünü tutacağımız değişken
+        private string _selectedServiceType = null;
+
         public CounterWindow(UserDto loggedInUser)
         {
             InitializeComponent();
-
             _loggedInUser = loggedInUser;
 
+            _appConfig = new AppConfig();
+            try
+            {
+                string configPath = "config.json";
+                if (File.Exists(configPath))
+                {
+                    string json = File.ReadAllText(configPath);
+                    _appConfig = JsonSerializer.Deserialize<AppConfig>(json) ?? new AppConfig();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Config dosyası okunamadı, varsayılan ayarlar kullanılacak.\nHata: {ex.Message}", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+
             _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new Uri("http://10.40.80.167:5000/");
 
-            // --- DEĞİŞTİRİLEN KISIM: Ayarları okuyup dinamik port atıyoruz ---
-            var configService = new ConfigService();
-            var config = configService.LoadSettings();
-            string portToUse = !string.IsNullOrEmpty(config.ArduinoPort) ? config.ArduinoPort : "COM5";
+            string apiUrl = string.IsNullOrEmpty(_appConfig.ApiUrl) ? "http://10.40.80.167:5000/" : _appConfig.ApiUrl;
+            _httpClient.BaseAddress = new Uri(apiUrl);
 
-            _arduinoService = new ArduinoService(portToUse);
-            // ------------------------------------------------------------------
+            if (_appConfig.IsArduinoConnected && !string.IsNullOrEmpty(_appConfig.ArduinoPort))
+            {
+                _localArduinoService = new ArduinoService(_appConfig.ArduinoPort);
+            }
 
             Loaded += CounterWindow_Loaded;
         }
 
         private async void CounterWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // --- GİŞE TEKRARINI ÖNLEYEN DÜZENLEME ---
             string counterText = _loggedInUser.AssignedCounter?.ToString() ?? "1";
             if (counterText.Contains("Gişe", StringComparison.OrdinalIgnoreCase))
             {
@@ -87,7 +102,6 @@ namespace QueueManagementSystem.Counter
             _breakTimer.Interval = TimeSpan.FromSeconds(1);
             _breakTimer.Tick += BreakTimer_Tick;
 
-            // Canlı Saat ve Tarih Sayaçları
             _clockTimer = new DispatcherTimer();
             _clockTimer.Interval = TimeSpan.FromSeconds(1);
             _clockTimer.Tick += (s, args) =>
@@ -96,9 +110,30 @@ namespace QueueManagementSystem.Counter
                 txtCurrentDate.Text = DateTime.Now.ToString("dd.MM.yyyy");
             };
             _clockTimer.Start();
+        }
 
-            txtCurrentTime.Text = DateTime.Now.ToString("HH:mm:ss");
-            txtCurrentDate.Text = DateTime.Now.ToString("dd.MM.yyyy");
+        // COMBOBOX SEÇİMİ DEĞİŞTİĞİNDE ÇALIŞIR
+        private async void CmbServiceType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cmbServiceType.SelectedItem is ComboBoxItem selectedItem)
+            {
+                string selection = selectedItem.Content.ToString();
+
+                if (selection == "Tüm İşlemler (Karışık)")
+                {
+                    _selectedServiceType = null; // API'ye null giderse hepsini getirir/çağırır
+                }
+                else
+                {
+                    _selectedServiceType = selection; // Örn: "Öğrenci İşleri" veya "Donanım Destek"
+                }
+
+                // Seçim değiştiği anda sağdaki bekleyenler listesini de güncelle
+                if (_httpClient != null)
+                {
+                    await RefreshQueueListAsync();
+                }
+            }
         }
 
         private void LiveProcessTimer_Tick(object sender, EventArgs e)
@@ -114,11 +149,18 @@ namespace QueueManagementSystem.Counter
 
         private async Task RefreshQueueListAsync()
         {
-            if (_isOnBreak) return; // Moladaysa listeyi yenilemeye gerek yok
+            if (_isOnBreak) return;
 
             try
             {
-                var waitingList = await _httpClient.GetFromJsonAsync<List<QueueTicket>>("api/QueueTickets/waiting");
+                // Seçilen hizmet türünü URL'ye querystring olarak ekliyoruz
+                string requestUrl = "api/QueueTickets/waiting";
+                if (!string.IsNullOrEmpty(_selectedServiceType))
+                {
+                    requestUrl += $"?serviceType={Uri.EscapeDataString(_selectedServiceType)}";
+                }
+
+                var waitingList = await _httpClient.GetFromJsonAsync<List<QueueTicket>>(requestUrl);
                 if (waitingList != null)
                 {
                     lstWaitingCustomers.ItemsSource = waitingList;
@@ -146,25 +188,25 @@ namespace QueueManagementSystem.Counter
                 string counterNumberStr = new String(_loggedInUser.AssignedCounter?.Where(Char.IsDigit).ToArray() ?? Array.Empty<char>());
                 int counterIdForApi = int.TryParse(counterNumberStr, out int parsedVal) ? parsedVal : 1;
 
-                var response = await _httpClient.PostAsync($"api/QueueTickets/call/{counterIdForApi}", null);
+                // Seçili hizmet türünü API'ye gönderiyoruz (Örn: /api/QueueTickets/call/1?serviceType=Öğrenci+İşleri)
+                string requestUrl = $"api/QueueTickets/call/{counterIdForApi}";
+                if (!string.IsNullOrEmpty(_selectedServiceType))
+                {
+                    requestUrl += $"?serviceType={Uri.EscapeDataString(_selectedServiceType)}";
+                }
+
+                var response = await _httpClient.PostAsync(requestUrl, null);
 
                 if (response.IsSuccessStatusCode)
                 {
                     _currentTicket = await response.Content.ReadFromJsonAsync<QueueTicket>();
 
-                    // --- ARDUINO EKRANINA VERİ GÖNDERME ---
-                    string displayCounter = _loggedInUser.AssignedCounter ?? "Gişe 1";
-                    if (!displayCounter.Contains("Gişe", StringComparison.OrdinalIgnoreCase))
-                        displayCounter = "Gişe " + displayCounter;
-
-                    // Port üzerinden bileti ve gişe adını ekrana yolluyoruz
-                    _arduinoService.SendTicketToLcd(displayCounter, _currentTicket.TicketNumber.ToString());
-                    // --------------------------------------
-
                     txtCurrentTicket.Text = _currentTicket.TicketNumber.ToString();
                     txtActiveStartTime.Text = DateTime.Now.ToString("HH:mm");
 
-                    txtActiveService.Text = "Hizmet: E-Kampüs / Öğrenci";
+                    // Artık aktif hizmetin adını veritabanından gelen veriyle dinamik yazıyoruz!
+                    string serviceName = string.IsNullOrEmpty(_currentTicket.ServiceType) ? "Standart İşlem" : _currentTicket.ServiceType;
+                    txtActiveService.Text = $"Hizmet: {serviceName}";
                     txtActivePriority.Text = "Öncelik: Normal";
 
                     _totalCalledToday++;
@@ -175,11 +217,22 @@ namespace QueueManagementSystem.Counter
                     _liveProcessTimer.Start();
 
                     BtnComplete.IsEnabled = true;
+
+                    // Arduino'ya veri gönder
+                    if (_localArduinoService != null && _appConfig.IsArduinoConnected)
+                    {
+                        string giseMesaji = $"GISE {counterIdForApi} - {_currentTicket.TicketNumber}";
+                        _localArduinoService.SendToLcd(giseMesaji);
+                    }
+
                     await RefreshQueueListAsync();
                 }
                 else
                 {
-                    MessageBox.Show("Sırada bekleyen müşteri yok.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                    string uyariMesaji = string.IsNullOrEmpty(_selectedServiceType)
+                        ? "Sırada bekleyen müşteri yok."
+                        : $"'{_selectedServiceType}' için sırada bekleyen müşteri yok.";
+                    MessageBox.Show(uyariMesaji, "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
@@ -201,7 +254,6 @@ namespace QueueManagementSystem.Counter
                     UpdateLastAction("✅ Tamamlandı", "#10B981");
                     CalculateStatistics();
                     ResetDisplay();
-
                     await RefreshQueueListAsync();
                 }
                 else
@@ -215,18 +267,20 @@ namespace QueueManagementSystem.Counter
             }
         }
 
-        private void BtnRecall_Click(object sender, RoutedEventArgs e)
+        private async void BtnRecall_Click(object sender, RoutedEventArgs e)
         {
             if (_currentTicket != null)
             {
-                // Tekrar çağır butonuna basıldığında LCD'ye aynı bileti tekrar gönderiyoruz
-                string displayCounter = _loggedInUser.AssignedCounter ?? "Gişe 1";
-                if (!displayCounter.Contains("Gişe", StringComparison.OrdinalIgnoreCase))
-                    displayCounter = "Gişe " + displayCounter;
+                if (_localArduinoService != null && _appConfig.IsArduinoConnected)
+                {
+                    string counterNumberStr = new String(_loggedInUser.AssignedCounter?.Where(Char.IsDigit).ToArray() ?? Array.Empty<char>());
+                    int counterIdForApi = int.TryParse(counterNumberStr, out int parsedVal) ? parsedVal : 1;
 
-                _arduinoService.SendTicketToLcd(displayCounter, _currentTicket.TicketNumber.ToString());
+                    string giseMesaji = $"GISE {counterIdForApi} - {_currentTicket.TicketNumber}";
+                    _localArduinoService.SendToLcd(giseMesaji);
+                }
 
-                MessageBox.Show($"{_currentTicket.TicketNumber} anons ediliyor...", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"{_currentTicket.TicketNumber} numaralı bilet tekrar anons ediliyor...", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -240,7 +294,6 @@ namespace QueueManagementSystem.Counter
 
             if (!_isOnBreak)
             {
-                // Molaya Çıkış
                 _isOnBreak = true;
                 _currentBreakTime = TimeSpan.Zero;
                 _breakTimer.Start();
@@ -252,22 +305,21 @@ namespace QueueManagementSystem.Counter
                         (sp.Children[0] as TextBlock).Text = "▶ ";
                         (sp.Children[1] as TextBlock).Text = "Molayı Bitir";
                     }
-                    btn.Background = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString("#10B981"); // Yeşil
+                    btn.Background = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString("#10B981");
                 }
 
                 txtCurrentTicket.Text = "MOLADA";
                 txtProcessTime.Text = "00:00";
+
+                if (_appConfig.IsArduinoConnected)
+                    _localArduinoService?.SendToLcd("    MOLADA      ");
             }
             else
             {
-                // Moladan Dönüş
                 _isOnBreak = false;
                 _breakTimer.Stop();
 
-                // Mola süresini ekle
                 _totalBreakTimeToday = _totalBreakTimeToday.Add(_currentBreakTime);
-
-                // Mola süresini dakika olarak hesaplayıp (virgülden sonra 2 hane) UserDto'ya ekliyoruz
                 double minutesToAdd = Math.Round(_currentBreakTime.TotalMinutes, 2);
                 _loggedInUser.TotalBreakTimeInMinutes += minutesToAdd;
 
@@ -278,14 +330,15 @@ namespace QueueManagementSystem.Counter
                         (sp.Children[0] as TextBlock).Text = "☕ ";
                         (sp.Children[1] as TextBlock).Text = "Mola Al";
                     }
-                    btn.Background = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString("#F59E0B"); // Turuncu
+                    btn.Background = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString("#F59E0B");
                 }
 
                 txtCurrentTicket.Text = "BEKLENİYOR";
 
-                // --- MOLA VERİSİNİ VERİTABANINA GÖNDER ---
-                await UpdateMolaSuresiAsync();
+                if (_appConfig.IsArduinoConnected)
+                    _localArduinoService?.SendToLcd(" BEKLENIYOR...  ");
 
+                await UpdateMolaSuresiAsync();
                 await RefreshQueueListAsync();
             }
         }
@@ -294,9 +347,7 @@ namespace QueueManagementSystem.Counter
         {
             try
             {
-                // Eklenen mola süresini virgülden sonra 2 hane olacak şekilde dakika bazında (double) gönderiyoruz
                 double minutesToAdd = Math.Round(_currentBreakTime.TotalMinutes, 2);
-
                 var response = await _httpClient.PutAsJsonAsync($"api/Users/{_loggedInUser.Id}/update-break", minutesToAdd);
 
                 if (!response.IsSuccessStatusCode)
@@ -409,12 +460,14 @@ namespace QueueManagementSystem.Counter
             txtActivePriority.Text = "Öncelik: ---";
             BtnComplete.IsEnabled = false;
             _currentTicket = null;
+
+            if (_appConfig.IsArduinoConnected)
+                _localArduinoService?.SendToLcd(" BEKLENIYOR...  ");
         }
 
-        // --- UYGULAMA KAPANIRKEN PORTU SERBEST BIRAK ---
         protected override void OnClosed(EventArgs e)
         {
-            _arduinoService?.CloseConnection();
+            _localArduinoService?.CloseConnection();
             base.OnClosed(e);
         }
     }

@@ -1,0 +1,6 @@
+{
+  "ApiUrl": "http://10.40.80.167:5000/",
+  "PrinterName": "POSPrinter POS80",
+  "IsPrintingEnabled": true,
+  "ArduinoPort": "COM5"
+}

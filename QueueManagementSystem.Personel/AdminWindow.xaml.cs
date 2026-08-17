@@ -342,13 +342,10 @@ namespace QueueManagementSystem.Counter
             txtApiUrl.Text = config.ApiUrl;
             _apiService = new ApiService(config.ApiUrl);
 
-            // --- YENİ EKLENEN KISIM: YAZDIRMA AYARINI EKRANA YÜKLE ---
-            // Eğer XAML'a chkIsPrintingEnabled eklemediysen bu satır hata verebilir. (Aşağıdaki nota bak)
             if (chkIsPrintingEnabled != null)
             {
                 chkIsPrintingEnabled.IsChecked = config.IsPrintingEnabled;
             }
-            // ---------------------------------------------------------
 
             // --- AKTİF COM PORTLARINI BİLGİSAYARDAN OTOMATİK ÇEK ---
             cmbComPort.Items.Clear();
@@ -402,13 +399,12 @@ namespace QueueManagementSystem.Counter
         {
             string apiUrl = txtApiUrl.Text.Trim();
             if (!apiUrl.EndsWith("/")) apiUrl += "/";
+
             var config = new AppConfig
             {
                 ApiUrl = apiUrl,
                 PrinterName = (cmbPrinters.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "",
                 ArduinoPort = (cmbComPort.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "COM5",
-
-                // YENİ EKLENDİ: Arayüzdeki CheckBox değerini okuyup config nesnesine atıyoruz
                 IsPrintingEnabled = chkIsPrintingEnabled.IsChecked == true
             };
 

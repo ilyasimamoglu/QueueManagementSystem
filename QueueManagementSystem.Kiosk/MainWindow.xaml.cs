@@ -9,6 +9,8 @@ using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Microsoft.AspNetCore.SignalR.Client;
+using QueueManagementSystem.Kiosk.Services;
 
 namespace QueueManagementSystem.Kiosk
 {
@@ -16,17 +18,28 @@ namespace QueueManagementSystem.Kiosk
     {
         private static readonly HttpClient _httpClient = new HttpClient();
 
-        // YENİ EKLENDİ: Kiosk kendi bilgisayarındaki (localhost) 5000 portuna bağlanır
         private string _apiUrl = "http://localhost:5000/";
-
         private string _printerName = "POSPrinter POS80";
         private bool _isPrintingEnabled = true;
         private readonly string _configFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
 
+        private HubConnection _hubConnection;
+        private ArduinoService _arduinoService;
+        private string _arduinoPort = "COM5";
+
         public MainWindow()
         {
             InitializeComponent();
+            Loaded += MainWindow_Loaded;
+        }
+
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
             LoadSystemSettings();
+
+            _arduinoService = new ArduinoService(_arduinoPort);
+
+            await InitializeSignalRAsync();
         }
 
         private void LoadSystemSettings()
@@ -46,23 +59,59 @@ namespace QueueManagementSystem.Kiosk
                         if (!string.IsNullOrWhiteSpace(config.PrinterName))
                             _printerName = config.PrinterName;
 
+                        if (!string.IsNullOrWhiteSpace(config.ArduinoPort))
+                            _arduinoPort = config.ArduinoPort;
+
                         _isPrintingEnabled = config.IsPrintingEnabled;
                     }
                 }
             }
             catch (Exception)
             {
+                // Hata durumunda varsayılan ayarlar geçerli kalır
+            }
+        }
+
+        private async Task InitializeSignalRAsync()
+        {
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl($"{_apiUrl}queueHub")
+                .WithAutomaticReconnect()
+                .Build();
+
+            _hubConnection.On<int, int>("ReceiveNewCall", (ticketNumber, counterId) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    string displayCounter = $"Gise {counterId}";
+
+                    if (_arduinoService != null)
+                    {
+                        _arduinoService.SendTicketToLcd(displayCounter, ticketNumber.ToString());
+                    }
+                });
+            });
+
+            try
+            {
+                await _hubConnection.StartAsync();
+                System.Diagnostics.Debug.WriteLine("Kiosk SignalR'a başarıyla bağlandı.");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Kiosk SignalR Bağlantı Hatası: " + ex.Message);
             }
         }
 
         private async void BtnBireysel_Click(object sender, RoutedEventArgs e)
         {
-            await ProcessTicketAsync("Öğrenci", "Normal");
+            await ProcessTicketAsync("Öğrenci İşleri", "Normal");
         }
 
         private async void BtnKurumsal_Click(object sender, RoutedEventArgs e)
         {
-            await ProcessTicketAsync("E-Kampüs", "Normal");
+            // BURASI DÜZELTİLDİ: E-Kampüs yerine Donanım Destek gönderiliyor
+            await ProcessTicketAsync("Donanım Destek", "Normal");
         }
 
         private async Task ProcessTicketAsync(string serviceType, string priority)
@@ -80,7 +129,7 @@ namespace QueueManagementSystem.Kiosk
                     string realTicketNumber = result?.TicketNumber.ToString() ?? "Hata";
 
                     int waitingCount = result?.WaitingCount ?? 0;
-                    string serviceNameHeader = $"{serviceType.ToUpper()} İŞLEMLERİ";
+                    string serviceNameHeader = serviceType.ToUpper();
 
                     if (_isPrintingEnabled)
                     {
@@ -256,6 +305,13 @@ namespace QueueManagementSystem.Kiosk
                 MessageBox.Show($"Bilet yazdırılamadı. Hata: {ex.Message}", "Yazıcı Uyarısı", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            _hubConnection?.DisposeAsync();
+            _arduinoService?.CloseConnection();
+            base.OnClosed(e);
+        }
     }
 
     public class AppConfig
@@ -263,6 +319,7 @@ namespace QueueManagementSystem.Kiosk
         public string ApiUrl { get; set; }
         public string PrinterName { get; set; }
         public bool IsPrintingEnabled { get; set; } = true;
+        public string ArduinoPort { get; set; }
     }
 
     public class TicketResponse

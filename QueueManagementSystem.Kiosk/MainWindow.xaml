@@ -28,7 +28,7 @@
                     </Button.Resources>
                 </Button>
 
-                <Button Content="E-Kampüs İşleri" Width="300" Height="150" FontSize="32" FontWeight="Bold" 
+                <Button Content="Donanım Destek" Width="300" Height="150" FontSize="32" FontWeight="Bold" 
                         Background="#E67E22" Foreground="White" BorderThickness="0"
                         Click="BtnKurumsal_Click" Cursor="Hand">
                     <Button.Resources>

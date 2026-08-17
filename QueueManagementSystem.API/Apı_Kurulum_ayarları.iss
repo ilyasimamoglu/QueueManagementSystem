@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 ; Non-commercial use only
 
-#define MyAppName "Sıramatik_Apı"
+#define MyAppName "Apı"
 #define MyAppVersion "1.0"
 #define MyAppPublisher "İlyas İmamoğlu"
 #define MyAppURL "https://www.example.com/"
@@ -14,7 +14,7 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{2CD2ED7C-CFB6-4A5A-922F-A8064ACDE58F}
+AppId={{FFAE34E2-A073-40E1-9CDD-77EAA09B7A41}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -36,8 +36,8 @@ ChangesAssociations=yes
 DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
-OutputDir=D:\Sıramatik Apı
-OutputBaseFilename=Apı_Kurulum_v1
+OutputDir=C:\Users\necoc\Desktop\Apı_exe
+OutputBaseFilename=Apı_exe
 SolidCompression=yes
 WizardStyle=modern dark
 

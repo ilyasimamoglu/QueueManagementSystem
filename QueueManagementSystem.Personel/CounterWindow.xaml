@@ -40,9 +40,19 @@
         <Grid Grid.Row="0" Margin="0,0,0,20">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="GİŞE TERMİNALİ" FontSize="24" FontWeight="Black" Foreground="#F8FAFC" Margin="0,0,10,0"/>
-                <Border Background="#3B82F6" CornerRadius="5" Padding="8,2" VerticalAlignment="Center">
+                <Border Background="#3B82F6" CornerRadius="5" Padding="8,2" VerticalAlignment="Center" Margin="0,0,20,0">
                     <TextBlock Text="PRO" FontSize="12" FontWeight="Bold" Foreground="White"/>
                 </Border>
+
+                <!-- YENİ EKLENEN HİZMET TÜRÜ SEÇİMİ (COMBOBOX) -->
+                <TextBlock Text="Hizmet Seçimi:" Foreground="#94A3B8" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <ComboBox x:Name="cmbServiceType" Width="200" Height="30" FontSize="14" FontWeight="SemiBold" 
+                          SelectionChanged="CmbServiceType_SelectionChanged" Background="#1E293B" Foreground="Black">
+                    <!-- Tümü seçeneği varsayılan olacak -->
+                    <ComboBoxItem Content="Tüm İşlemler (Karışık)" IsSelected="True"/>
+                    <ComboBoxItem Content="Öğrenci İşleri"/>
+                    <ComboBoxItem Content="Donanım Destek"/>
+                </ComboBox>
             </StackPanel>
 
             <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal">
@@ -295,7 +305,7 @@
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Text="{Binding TicketNumber}" FontSize="20" FontWeight="Bold" Foreground="#F8FAFC" VerticalAlignment="Center"/>
                                         <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding WaitTime}" FontSize="14" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Right" FontFamily="Consolas"/>
+                                            <TextBlock Text="{Binding ServiceType}" FontSize="12" FontWeight="SemiBold" Foreground="#3B82F6" HorizontalAlignment="Right"/>
                                         </StackPanel>
                                     </Grid>
                                 </DataTemplate>

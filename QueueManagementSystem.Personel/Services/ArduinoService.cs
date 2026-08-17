@@ -2,28 +2,31 @@
 using System.IO.Ports;
 using System.Diagnostics;
 
-namespace QueueManagementSystem.Counter.Services
+namespace QueueManagementSystem.Counter.Services // Kendi projene göre değiştir
 {
     public class ArduinoService
     {
         private SerialPort _serialPort;
 
-        public ArduinoService(string portName = "COM5")
+        public ArduinoService(string portName)
         {
             try
             {
                 _serialPort = new SerialPort(portName, 9600);
-                _serialPort.NewLine = "\r\n";
+                _serialPort.NewLine = "\n"; // Sadece \n kullanıyoruz
                 _serialPort.Open();
-                Debug.WriteLine($"{portName} portu başarıyla açıldı.");
+
+                _serialPort.DiscardInBuffer();
+                _serialPort.DiscardOutBuffer();
+
+                Debug.WriteLine($"Gişe Arduino portu ({portName}) başarıyla açıldı.");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Arduino bağlantı hatası ({portName}): " + ex.Message);
+                Debug.WriteLine($"Gişe Arduino bağlantı hatası ({portName}): " + ex.Message);
             }
         }
 
-        // Türkçe karakterleri İngilizce'ye çeviren yardımcı metot
         private string ReplaceTurkishCharacters(string text)
         {
             if (string.IsNullOrEmpty(text)) return text;
@@ -36,24 +39,19 @@ namespace QueueManagementSystem.Counter.Services
                        .Replace("ç", "c").Replace("Ç", "C");
         }
 
-        public void SendTicketToLcd(string counterName, string ticketNumber)
+        public void SendToLcd(string message)
         {
             if (_serialPort != null && _serialPort.IsOpen)
             {
                 try
                 {
-                    // Önce metinleri birleştiriyoruz
-                    string message = $"{counterName} - {ticketNumber}";
-
-                    // Ardından Arduino'ya yollamadan hemen önce Türkçe harfleri temizliyoruz
+                    // Metindeki Türkçe karakterleri temizle ve Arduino'ya yolla
                     string safeMessage = ReplaceTurkishCharacters(message);
-
-                    // Temizlenmiş veriyi (Örn: "Gise 3 - A124") Arduino'ya gönder
                     _serialPort.WriteLine(safeMessage);
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine("Arduino'ya veri gönderme hatası: " + ex.Message);
+                    Debug.WriteLine("Gişe Arduino'ya veri gönderme hatası: " + ex.Message);
                 }
             }
         }
